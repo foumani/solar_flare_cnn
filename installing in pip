@@ -1,0 +1,2 @@
+pip install numpy matplotlib pandas tqdm scikit-learn sktime jupyter numba tensorflow
+

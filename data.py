@@ -12,7 +12,6 @@ from tqdm import tqdm
 
 import preprocess
 import util
-from context import Context
 
 
 class FlairDataset(Dataset):
@@ -30,46 +29,38 @@ class FlairDataset(Dataset):
 
 class Data:
     
-    def __init__(self, verbose=False):
-        create_files_df_if_not_exists()
-        self.all_files_df = read_files_df()
-        create_files_numpy_if_not_exists(self.all_files_df)
-        self.all_files_np = read_files_np()
+    def __init__(self, args, verbose=False):
+        create_files_df_if_not_exists(args.data_dir, args.files_df_filename)
+        self.all_files_df = read_files_df(args.data_dir, args.files_df_filename)
+        create_files_numpy_if_not_exists(args.data_dir,
+                                         args.files_df_filename,
+                                         self.all_files_df)
+        self.all_files_np = read_files_np(args.data_dir, args.files_np_filename)
         self.normalizer = preprocess.Normalizer()
         self.saved_datasets = dict()
         self.verbose = verbose
         self.parts = []
     
-    def numpy_datasets(self, context: Context):
-        if context.train_parts is not None:
-            train_parts = context.train_parts
-        else:
-            train_parts = [i for i in range(1, 6) if
-                           i not in [context.val_part, context.test_part]]
+    def numpy_datasets(self, args):
+        train_parts = [i for i in range(1, 6) if i not in [args.test_part]]
         print(f"Training {train_parts}, "
-              f"Val {context.val_part if context.val_part is not None else context.val_p}, "
-              f"Test {context.test_part}")
+              f"Val {args.val_p}, "
+              f"Test {args.test_part}")
         
         X_train_np, y_train_np = self.numpy_dataset(train_parts,
-                                                    context.normalization_mode,
-                                                    context.train_k,
-                                                    context.train_n,
+                                                    args.normalization_mode,
+                                                    args.data_dir,
+                                                    args.train_k,
+                                                    args.train_n,
                                                     train=True,
-                                                    nan_mode=context.nan_mode,
-                                                    binary=context.binary)
+                                                    nan_mode=args.nan_mode,
+                                                    binary=args.binary)
         if self.verbose:
-            self.print_stats("train", y_train_np, context.binary)
+            self.print_stats("train", y_train_np, args.binary)
         
-        if context.val_part is not None:
-            X_val_np, y_val_np = self.numpy_dataset([context.val_part],
-                                                    context.normalization_mode,
-                                                    nan_mode=context.nan_mode,
-                                                    binary=context.binary)
-            if self.verbose:
-                self.print_stats("val  ", y_val_np, context.binary)
-        elif context.val_p is not None:
+        if args.val_p is not None:
             val_idx = np.random.choice(int(len(X_train_np)),
-                                       int(len(X_train_np) * context.val_p),
+                                       int(len(X_train_np) * args.val_p),
                                        replace=False)
             val_mask = np.zeros(len(X_train_np), dtype=bool)
             val_mask[val_idx] = True
@@ -80,19 +71,20 @@ class Data:
         else:
             X_val_np, y_val_np = None, None
         
-        X_test_np, y_test_np = self.numpy_dataset([context.test_part],
-                                                  context.normalization_mode,
-                                                  nan_mode=context.nan_mode,
-                                                  binary=context.binary)
+        X_test_np, y_test_np = self.numpy_dataset([args.test_part],
+                                                  args.normalization_mode,
+                                                  args.data_dir,
+                                                  nan_mode=args.nan_mode,
+                                                  binary=args.binary)
         if self.verbose:
-            self.print_stats("test ", y_test_np, context.binary)
+            self.print_stats("test ", y_test_np, args.binary)
         
         return X_train_np, y_train_np, X_val_np, y_val_np, X_test_np, y_test_np
     
-    def numpy_dataset(self, parts, normalization_mode, k=None, n=None,
+    def numpy_dataset(self, parts, normalization_mode, data_dir, k=None, n=None,
                       train=False, nan_mode=None, binary=True):
         hash_dataset = f"{util.hash_dataset(parts, k, n, nan_mode, binary)}"
-        dataset_loc = os.path.join(Context.data_dir, hash_dataset)
+        dataset_loc = os.path.join(data_dir, hash_dataset)
         if hash_dataset in self.saved_datasets:
             (X, y, norm_vals) = deepcopy(self.saved_datasets[hash_dataset])
             if train:
@@ -136,27 +128,25 @@ class Data:
         print(f"{prefix}: {a:5d} all, {list(zip(portion, follow_up))}")
     
     @staticmethod
-    def dataholders(context, X_train_np, y_train_np, X_val_np, y_val_np,
-                    X_test_np,
-                    y_test_np, test=False):
-        X_train = torch.tensor(X_train_np, dtype=torch.float32).to(
-            Context.device)
-        y_train = torch.tensor(y_train_np, dtype=torch.long).to(Context.device)
-        if context.batch_size is None or context.batch_size == 0.0:
+    def dataholders(args, X_train_np, y_train_np, X_val_np, y_val_np,
+                    X_test_np, y_test_np, test=False):
+        X_train = torch.tensor(X_train_np, dtype=torch.float32).to(args.device)
+        y_train = torch.tensor(y_train_np, dtype=torch.long).to(args.device)
+        if args.batch_size is None or args.batch_size == 0.0:
             train = [util.DataPair(X_train, y_train)]
         else:
             train_dataset = FlairDataset(X=X_train, y=y_train)
             train = DataLoader(train_dataset,
-                               batch_size=context.batch_size,
+                               batch_size=args.batch_size,
                                shuffle=True)
         if test:
             val = None
         else:
-            X_val = torch.tensor(X_val_np, dtype=torch.float32).to(Context.device)
-            y_val = torch.tensor(y_val_np, dtype=torch.long).to(Context.device)
+            X_val = torch.tensor(X_val_np, dtype=torch.float32).to(args.device)
+            y_val = torch.tensor(y_val_np, dtype=torch.long).to(args.device)
             val = [util.DataPair(X_val, y_val)]
-        X_test = torch.tensor(X_test_np, dtype=torch.float32).to(Context.device)
-        y_test = torch.tensor(y_test_np, dtype=torch.long).to(Context.device)
+        X_test = torch.tensor(X_test_np, dtype=torch.float32).to(args.device)
+        y_test = torch.tensor(y_test_np, dtype=torch.long).to(args.device)
         test = [util.DataPair(X_test, y_test)]
         return train, val, test
 
@@ -194,14 +184,14 @@ def create_files_df(partition_dirs, file_path):
     return files_df
 
 
-def create_files_numpy(file_path, files_df):
+def create_files_numpy(data_dir, file_path, files_df):
     n = len(files_df)
     pbar = tqdm(total=n, unit="files", smoothing=0.01)
     X = np.empty((n, 24, 60))
     for index, row in files_df.iterrows():
         file_path = row["path"]
         df = pandas.read_csv(
-            os.path.join(Context.data_dir, file_path), delimiter="\t"
+            os.path.join(data_dir, file_path), delimiter="\t"
         )
         df = df[df.columns[1:25]]
         X[index] = df.to_numpy().T
@@ -212,7 +202,7 @@ def create_files_numpy(file_path, files_df):
 def choose_from_active_regions(files_df, k):
     indices = []
     active_regions = files_df.active_region.unique()
-    # k = k / len(active_regions)
+    k = k / len(active_regions)
     for active_region in active_regions:
         active_region_df = files_df[files_df.active_region == active_region]
         n = int(k)
@@ -298,35 +288,32 @@ def read_instances(files_df, files_np, binary):
     return X, y
 
 
-def create_files_df_if_not_exists():
-    if not os.path.exists(os.path.join(Context.data_dir,
-                                       Context.files_df_filename)):
+def create_files_df_if_not_exists(data_dir, files_df_filename):
+    if not os.path.exists(os.path.join(data_dir, files_df_filename)):
         print("Creating all files df ...")
         partition_dirs = []
-        for partition_dir in os.listdir(Context.data_dir):
+        for partition_dir in os.listdir(data_dir):
             if "partition" not in partition_dir:
                 continue
-            partition_dirs.append(os.path.join(Context.data_dir, partition_dir))
+            partition_dirs.append(os.path.join(data_dir, partition_dir))
             create_files_df(partition_dirs,
-                            os.path.join(Context.data_dir,
-                                         Context.files_df_filename))
+                            os.path.join(data_dir, files_df_filename))
         print("Created all files df")
 
 
-def create_files_numpy_if_not_exists(files_df):
-    if not os.path.exists(os.path.join(Context.data_dir,
-                                       Context.files_np_filename)):
+def create_files_numpy_if_not_exists(data_dir, files_np_filename, files_df):
+    if not os.path.exists(os.path.join(data_dir, files_np_filename)):
         print("Creating all files numpy ...")
-        create_files_numpy(os.path.join(Context.data_dir,
-                                        Context.files_np_filename), files_df)
+        create_files_numpy(data_dir,
+                           os.path.join(data_dir, files_np_filename),
+                           files_df)
 
 
-def read_files_df():
+def read_files_df(data_dir, files_df_filename):
     print("Reading all files df ...")
-    return pandas.read_csv(os.path.join(Context.data_dir,
-                                        Context.files_df_filename))
+    return pandas.read_csv(os.path.join(data_dir, files_df_filename))
 
 
-def read_files_np():
+def read_files_np(data_dir, files_np_filename):
     print("Reading all files np ...")
-    return np.load(os.path.join(Context.data_dir, Context.files_np_filename))
+    return np.load(os.path.join(data_dir, files_np_filename))

@@ -3,21 +3,22 @@ import os
 import random
 
 import torch.nn as nn
+from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
+from sklearn.manifold import TSNE
 
 import util
 from algorithm import *
-from context import Context
 from conv_model import ConvModel
 from data import Data
 from preprocess import Normalizer
 from reporter import Reporter
 
 
-def draw(emb, y, hash_name, binary):
+def draw(args, emb, y, hash_name, binary):
     tsne = TSNE(n_components=2 if binary else 4,
                 method="barnes_hut" if binary else "exact")
-    plt.figure(figsize=(5, 3))
+    # plt.figure(figsize=(5, 3))
     
     if binary:
         qbc_idx = np.random.choice((y == 0).nonzero()[0], 1500, replace=False)
@@ -51,73 +52,71 @@ def draw(emb, y, hash_name, binary):
     else:
         plt.legend(handles=sc.legend_elements()[0],
                    labels=["Q", "BC", "M", "X"])
+    train_parts = [i for i in range(1, 6) if i not in [args.test_part]]
+    plt.title(f"Train parts {train_parts}, Test part {args.test_part}")
     plt.savefig(f"plots/{hash_name}.png")
+    plt.show()
 
 
-def train(context: Context, data: Data, reporter: Reporter):
-    train, val, test = data.dataholders(context, *data.numpy_datasets(context))
-    hash_name = util.hash_name(context)
-    model = ConvModel(conv1_channels=context.ch_conv1,
-                      conv2_channels=context.ch_conv2,
-                      conv3_channels=context.ch_conv3,
-                      l_hidden=context.l_hidden,
-                      data_dropout=context.data_dropout,
-                      layer_dropout=context.layer_dropout,
-                      output_size=2 if context.binary else 4).to(Context.device)
+def train(args, data: Data, reporter: Reporter):
+    train, val, test = data.dataholders(args, *data.numpy_datasets(args))
+    model = ConvModel(conv1_channels=args.ch_conv1,
+                      conv2_channels=args.ch_conv2,
+                      conv3_channels=args.ch_conv3,
+                      l_hidden=args.l_hidden,
+                      data_dropout=args.data_dropout,
+                      layer_dropout=args.layer_dropout,
+                      output_size=2 if args.binary else 4).to(args.device)
     loss_weight = None
-    if context.class_importance is not None:
-        loss_weight = torch.Tensor(context.class_importance)
-    criterion = nn.NLLLoss(weight=loss_weight).to(Context.device)
-    algo = Algorithm(context,
+    if args.class_importance is not None:
+        loss_weight = torch.Tensor(args.class_importance)
+    criterion = nn.NLLLoss(weight=loss_weight).to(args.device)
+    algo = Algorithm(args,
                      model=model,
                      criterion=criterion,
                      optimizer=torch.optim.Adam(model.parameters(),
-                                                lr=context.lr),
+                                                lr=args.lr),
                      dataholder={"train": train,
                                  "val": val},
                      reporter=reporter,
-                     verbose=True,
-                     ablation=context.ablation)
-    algo.train(early_stop=context.early_stop)
+                     verbose=True)
+    algo.train(early_stop=args.early_stop)
     test_loss, test_metric = algo.test(test)
     print(f"best val run: {algo.best_val_run_metric}")
     print(f"test run    : {test_metric}")
-    torch.save(algo.best_model_wts,
-               os.path.join(Context.model_dir, f"{hash_name}.ckpt"))
-    if context.draw:
-        draw(model.exp_last_layer(test[0].X).cpu().detach().numpy(),
+    if args.draw:
+        draw(args,
+             model.exp_last_layer(test[0].X).cpu().detach().numpy(),
              test[0].y.cpu().detach().numpy(),
-             util.hash_name(context),
-             context.binary)
+             util.hash_name(args),
+             args.binary)
     if reporter is not None:
-        reporter.save_run_report(hash_name)
-        reporter.split_row(context, algo.best_val_run_metric, test_metric)
-        reporter.save_split_report(incremental=True)
+        reporter.split_row(args, algo.best_val_run_metric, test_metric)
+        reporter.save_split_report(args, incremental=True)
     return algo.best_val_run_metric, test_metric
 
 
-def cross_val(context, data, reporter):
-    all_val_metric = Metric(binary=context.binary)
-    all_test_metric = Metric(binary=context.binary)
+def cross_val(args, data, reporter):
+    all_val_metric = Metric(binary=args.binary)
+    all_test_metric = Metric(binary=args.binary)
     for test_part in range(1, 6):
-        context.test_part = test_part
-        best_val_run_metric, test_metric = train(context, data,
-                                                 reporter=reporter)
+        args.test_part = test_part
+        best_val_run_metric, test_metric = train(args, data, reporter)
         all_val_metric += best_val_run_metric
         all_test_metric += test_metric
     if reporter is not None:
-        reporter.model_row(context,
-                           all_val_metric=all_val_metric,
-                           all_test_metric=all_test_metric)
-        reporter.save_model_report(incremental=True)
+        reporter.model_row(args,
+                           val_metric=all_val_metric,
+                           test_metric=all_test_metric)
+        reporter.save_model_report(args, incremental=True)
     print(f"all test metric: {all_test_metric}")
     return all_val_metric, all_test_metric
 
 
-def dataset_search(context, data, reporter):
+def dataset_search(args, data, reporter):
     dataset_grid = []
     training_modes = ["k", "n"]  # 2
-    if context.binary:
+    if args.binary:
         bcq = [i for i in range(400, 4001, 400)]  # 10
         mx = [i for i in range(200, 1401, 200)]  # 7
         dataset_grid.extend(list(itertools.product(bcq, mx)))
@@ -138,13 +137,13 @@ def dataset_search(context, data, reporter):
     dropouts = [0.1 * i for i in range(0, 7, 2)]  # 4
     nan_modes = [0, None, "avg"]  # 3
     convs = [16, 32, 64, 128]  # 4
-    hidden = [8, 16, 32, 64]  # 4
+    hidden = [0, 8, 16, 32, 64]  # 5
     normalizations = [Normalizer.scale, Normalizer.z_score]  # 2
     batch_sizes = [128, 1024, None]  # 3
     
-    print(f"Searching through {context.n_random_search} items")
-    for _ in range(context.n_random_search):
-        if context.binary:
+    print(f"Searching through {args.n_random_search} items")
+    for _ in range(args.n_random_search):
+        if args.binary:
             split = [0] * 2
             split[0] = random.choice(bcq)
             split[1] = random.choice(mx)
@@ -156,87 +155,77 @@ def dataset_search(context, data, reporter):
             split[3] = random.choice(x)
         training_mode = random.choice(training_modes)
         if training_mode == "n":
-            context.train_n = split
-            context.train_k = None
+            args.train_n = split
+            args.train_k = None
         else:
-            context.train_k = split
-            context.train_n = None
+            args.train_k = split
+            args.train_n = None
         
-        context.ch_conv1 = random.choice(convs)
-        context.ch_conv2 = random.choice(convs)
-        context.ch_conv3 = random.choice(convs)
-        context.l_hidden = random.choice(hidden)
+        args.ch_conv1 = random.choice(convs)
+        args.ch_conv2 = random.choice(convs)
+        args.ch_conv3 = random.choice(convs + [0])
+        args.l_hidden = random.choice(hidden)
         
-        context.nan_mode = random.choice(nan_modes)
-        context.data_dropout = random.choice(dropouts)
-        context.layer_dropout = random.choice(dropouts)
-        context.normalization_mode = random.choice(normalizations)
-        context.class_importance = random.choice(class_importances)
-        context.batch_size = random.choice(batch_sizes)
-        print(context)
-        cross_val(context, data, reporter)
+        args.nan_mode = random.choice(nan_modes)
+        args.data_dropout = random.choice(dropouts)
+        args.layer_dropout = random.choice(dropouts)
+        args.normalization_mode = random.choice(normalizations)
+        args.class_importance = random.choice(class_importances)
+        args.batch_size = random.choice(batch_sizes)
+        args.run_no = 0  # Only run once for each parameter set.
+        cross_val(args, data, reporter)
 
 
-def single_run(data, reporter, binary):
-    binary_context = Context(binary=True,
-                             train_n=[4000, 2200],
-                             ch_conv1=64, ch_conv2=32, ch_conv3=0,
-                             l_hidden=0,
-                             nan_mode="avg",
-                             batch_size=256,
-                             normalization_mode="scale",
-                             data_dropout=0.1,
-                             layer_dropout=0.1,
-                             val_p=0.5,
-                             class_importance=[0.3, 0.7], stop=1000,
-                             early_stop=40,
-                             draw=True,
-                             ablation=False)
-    multi_context = Context(binary=False,
-                            batch_size=256,
-                            train_n=[2000, 2000, 400, 120],
-                            ch_conv1=64, ch_conv2=32, ch_conv3=0,
-                            l_hidden=32,
-                            nan_mode="avg", normalization_mode="scale",
-                            class_importance=[1, 1, 5, 15],
-                            lr=0.01, data_dropout=0.2, layer_dropout=0.4,
-                            val_p=0.5, stop=1000, early_stop=40, draw=True)
-    cross_val(binary_context if binary else multi_context, data, reporter)
+def single_run(args, data, reporter):
+    if args.binary:
+        args.train_n = [4000, 2200]
+        args.ch_conv1 = 64
+        args.ch_conv2 = 32
+        args.ch_conv3 = 0
+        args.l_hidden = 0
+        args.nan_mode = "avg"
+        args.batch_size = 256
+        args.normalization_mode = "scale"
+        args.data_dropout = 0.1
+        args.layer_dropout = 0.1
+        args.val_p = 0.5
+        args.class_importance = [0.3, 0.7]
+    else:
+        args.batch_size = 256
+        args.train_n = [2000, 2000, 400, 120],
+        args.ch_conv1 = 64
+        args.ch_conv2 = 32
+        args.ch_conv3 = 0
+        args.l_hidden = 32,
+        args.nan_mode = "avg"
+        args.normalization_mode = "scale"
+        args.class_importance = [1, 1, 5, 15]
+        args.lr = 0.01
+        args.data_dropout = 0.2
+        args.layer_dropout = 0.4
+        args.val_p = 0.5
+    
+    cross_val(args, data, reporter)
 
 
 def main():
-    # numpy.seterr(divide='ignore', invalid='ignore')
     numpy.set_printoptions(precision=2, formatter={'int': '{:5d}'.format,
                                                    'float': '{:7.2f}'.format})
-    prog_args = util.arg_parse()
+    prog_args = util.train_arg_parse()
     start = time.time()
-    Context.device = torch.device(
-        f"cuda" if torch.cuda.is_available() else "cpu")
-    print(f"device: {Context.device}")
     print(f"cpu count: {os.cpu_count()}")
-    Context.data_dir = "/home/arash/data/solar_flare"
-    Context.tensorlog_dir = "tensorlog"
-    Context.log_dir = "log"
-    if not os.path.exists(Context.log_dir):
-        os.makedirs(Context.log_dir)
-    Context.model_dir = "models"
-    if not os.path.exists(Context.model_dir):
-        os.makedirs(Context.model_dir)
-    Context.files_df_filename = "all_files.csv"
-    Context.split_report_filename = f"split_report_{'binary' if prog_args.binary else 'multi'}.csv"
-    Context.model_report_filename = f"model_report_{'binary' if prog_args.binary else 'multi'}.csv"
-    Context.files_np_filename = "full_data_X_1_25.npy"
-    context = Context(lr=0.01,
-                      early_stop=40,
-                      stop=400,
-                      binary=prog_args.binary,
-                      val_p=0.5,
-                      n_random_search=prog_args.n_param_search,
-                      run_times=prog_args.run_times)
+    print(prog_args)
+    print(f"device: {prog_args.device}")
+    print(f"data dir: {prog_args.data_dir}")
+    print(f"binary: {prog_args.binary}")
+    print(f"csv database: {prog_args.files_df_filename}")
+    print(f"mem instances: {prog_args.files_np_filename}")
+    print(f"val p: {prog_args.val_p}")
+    print(f"early stop: {prog_args.early_stop}")
     reporter = Reporter()
-    data = Data()
-    single_run(data, reporter, prog_args.binary)
-    # dataset_search(context, data=data, reporter=reporter)
+    data = Data(prog_args)
+    # single_run(prog_args, data, reporter)
+    dataset_search(prog_args, data=data, reporter=reporter)
     run_time = int(time.time() - start)
     print(f"It took {run_time // 60:02d}:{run_time % 60:02d} to run program")
 

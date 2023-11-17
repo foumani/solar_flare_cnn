@@ -1,23 +1,21 @@
 import time
-from copy import copy, deepcopy
+from copy import deepcopy
 
 import numpy
+import numpy as np
 import torch
 
 import reporter
 from reporter import Reporter
 from util import Metric
-from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 class Algorithm:
     
-    def __init__(self, context, model, criterion, optimizer, dataholder,
-                 reporter: Reporter, verbose=True, ablation=False):
+    def __init__(self, args, model, criterion, optimizer, dataholder,
+                 reporter: Reporter, verbose=True):
         super(Algorithm, self).__init__()
-        self.context = context
+        self.args = args
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
@@ -25,22 +23,20 @@ class Algorithm:
         self.verbose = verbose
         self.reporter = reporter
         self.best_model_wts = None
-        self.best_val_run_metric = Metric(binary=self.context.binary)
+        self.best_val_run_metric = Metric(binary=self.args.binary)
         if self.reporter is None:
             self.verbose = False
-        else:
-            self.reporter.new_run()
-        self.ablation = ablation
+        self.ablation = args.ablation
     
     def train(self, early_stop=5):
         epoch, early_stop_cnt = 0, 0
         train_metric = Metric()
         best_tss = 0.0
-        while early_stop_cnt <= early_stop and epoch <= self.context.stop:
+        while early_stop_cnt <= early_stop and epoch <= self.args.stop:
             epoch_start_time = time.time()
             if self.verbose:
                 print(reporter.text_red +
-                      f"run no. {self.context.run_no} | "
+                      f"run no. {self.args.run_no} | "
                       f"epoch {epoch + 1:4d} | "
                       f"early stop {early_stop_cnt:4d}: "
                       + reporter.text_normal)
@@ -56,8 +52,6 @@ class Algorithm:
                 if phase == "val":
                     if self.verbose:
                         print(reporter.text_blue)
-                    
-                    # if best_tss <= 0.5 * metric.tss + 0.5 * train_metric.tss:
                     if best_tss <= np.average(train_metric.tss):
                         early_stop_cnt = -1
                         best_tss = np.average(train_metric.tss)
@@ -65,8 +59,6 @@ class Algorithm:
                         self.best_model_wts = deepcopy(self.model.state_dict())
                     else:
                         early_stop_cnt += 1
-                    if self.reporter is not None:
-                        self.reporter.run_row(epoch)
                 else:
                     train_metric = deepcopy(metric)
                     if self.verbose:
@@ -107,7 +99,7 @@ class Algorithm:
         return emb, y_emb
     
     def run_epoch(self, dataloader):
-        running_loss, metric = 0, Metric(binary=self.context.binary)
+        running_loss, metric = 0, Metric(binary=self.args.binary)
         l_points = 0
         for i, (X, y) in enumerate(dataloader):
             if self.ablation:
@@ -123,6 +115,6 @@ class Algorithm:
                 running_loss += loss.item() * X.size(0)
                 _, y_pred = torch.max(output, dim=1)
                 metric += Metric(y.cpu().numpy(), y_pred.cpu().numpy(),
-                                 self.context.binary)
+                                 self.args.binary)
                 l_points += len(y)
         return running_loss / l_points, metric

@@ -12,7 +12,6 @@ class Context:
     files_np_filename = None
     split_report_filename = None
     model_report_filename = None
-    device = "cpu"
     
     def __init__(self,
                  binary=True,

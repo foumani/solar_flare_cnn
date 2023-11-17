@@ -1,26 +1,105 @@
 import argparse
+import os
 from collections import namedtuple
 
 import numpy as np
+import torch
 from sklearn.metrics import confusion_matrix
-
-from context import Context
 
 DataPair = namedtuple("DataPair", ["X", "y"])
 
 
-def arg_parse():
-    parser = argparse.ArgumentParser(description="Solar prediction arguments.")
-    parser.add_argument('--binary', dest='binary',
+def train_arg_parse():
+    parser = common_arg_parse()
+    parser.add_argument("--learning_rate", dest="lr",
+                        default=0.01,
+                        type=float,
+                        help="Adam optimizer learning rate.")
+    parser.add_argument("--early_stop", dest="early_stop", type=int,
+                        default=40)
+    parser.add_argument("--stop", dest="stop", default=1000, type=int)
+    parser.add_argument("--random_search", dest="n_random_search",
+                        type=int,
+                        default=100)
+    parser.add_argument("--batch", dest="batch_size", default=256, type=int)
+    parser.add_argument("--draw", dest="draw",
                         action="store_true",
+                        help="Draw the t-SNE of the last layer of model.")
+    parser.add_argument("--ablation", dest="ablation",
+                        action="store_true",
+                        help="Seeing the effect of removing the FCN.")
+    parser.add_argument("--val_p", dest="val_p",
+                        default=0.4,
+                        required=False,
+                        type=float,
+                        help="Portion of data dedicated to validation set.")
+    args = parser.parse_args()
+    if args.train_n is not None:
+        args.train_n = [int(a) for a in args.train_n.split(",")]
+    if args.train_k is not None:
+        args.train_k = [int(a) for a in args.train_k.split(",")]
+    
+    if not os.path.exists(args.log_dir):
+        os.makedirs(args.log_dir)
+    if not os.path.exists("./experiments_plot"):
+        os.makedirs("./experiments_plot")
+    if not os.path.exists("./plots"):
+        os.makedirs("./plots")
+    
+    args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
+    args.model_report_filename = f"model_report_{'binary' if args.binary else 'multi'}.csv"
+    
+    args.device = torch.device(f"cuda" if torch.cuda.is_available()
+                               else "cpu")
+    return args
+
+
+def baseline_arg_parse():
+    parser = common_arg_parse()
+    parser.add_argument("--val_p", dest="val_p", default=None, type=float,
+                        help="Proportion of validation instances from training "
+                             "set. It is mutually exclusive with valpart.")
+    parser.add_argument("--method", dest="method", required=False,
+                        help="Running what baseline. Possible choices are 'svm', 'minirocket', 'cif', 'cnn', and 'lstm'.")
+    return parser.parse_args()
+
+
+def common_arg_parse():
+    parser = argparse.ArgumentParser(description="Solar prediction arguments.")
+    parser.add_argument('--multi', dest='binary',
+                        action="store_false",
                         help='Whether train for binary or multi classification.')
     parser.add_argument('--runs', dest='run_times', default=1, type=int,
                         help='How many times a model runs.')
-    parser.add_argument("--method", dest="method", required=False,
-                        help="Running what baseline. Possible choices are 'svm', 'minirocket'")
-    parser.add_argument('--paramsearch', dest="n_param_search", type=int, required=False,
+    parser.add_argument('--paramsearch', dest="n_param_search", type=int,
+                        required=False,
                         help="How many random values searched.")
-    return parser.parse_args()
+    parser.add_argument("--datadir", dest="data_dir", required=True,
+                        help="Location of data directory.")
+    parser.add_argument("--logdir", dest="log_dir", required=True,
+                        help="Location of log directory.")
+    parser.add_argument("--files_csv", dest="files_df_filename",
+                        default="all_files.csv",
+                        help="Name of the csv database of instances.")
+    parser.add_argument("--files_mem", dest="files_np_filename",
+                        default="full_data_X_1_25.npy",
+                        help="Name of the numpy file with all instances.")
+    parser.add_argument("--n", dest="train_n", default=None,
+                        help="Distribution of values for train set as "
+                             "size for each class. "
+                             "Input each value for classes seperated by ','. "
+                             "Example: 400,300,200,100 ."
+                             "Mutually exclusive with 'k'.")
+    parser.add_argument("--k", dest="train_k", default=None,
+                        help="Distribution of values for train set as "
+                             "proportion for each class. "
+                             "Input each value for classes seperated by ','. "
+                             "Example: 400,300,200,100 ."
+                             "Mutually exclusive with 'n'.")
+    parser.add_argument("--valpart", dest="val_part", default=None, type=int,
+                        help="Partition of SWAN-SF set as validation. "
+                             "It is mutually exclusive with valp.")
+    return parser
 
 
 def hash_dataset(partitions, k, n, nan_mode, binary):
@@ -36,49 +115,49 @@ def hash_dataset(partitions, k, n, nan_mode, binary):
     return hash_str
 
 
-def hash_name(context: Context):
+def hash_name(args):
     hash_str = ""
-    if context.train_n is not None:
-        hash_str += f"train(n){context.train_n}_"
-    elif context.train_k is None:
+    if args.train_n is not None:
+        hash_str += f"train(n){args.train_n}_"
+    elif args.train_k is None:
         hash_str += f"train(full)_"
     else:
-        hash_str += f"train(k){context.train_k}_"
+        hash_str += f"train(k){args.train_k}_"
     
-    hash_str += f"val[{context.val_part if context.val_part is not None else context.val_p}]_"
-    hash_str += f"test[{context.test_part}]"
+    hash_str += f"val[{args.val_part if args.val_part is not None else args.val_p}]_"
+    hash_str += f"test[{args.test_part}]"
     
-    hash_str += f"_batch{context.batch_size}"
+    hash_str += f"_batch{args.batch_size}"
     
-    hash_str += f"_model{[context.ch_conv1, context.ch_conv2, context.ch_conv3]}"
-    hash_str += f"{[context.l_hidden]}"
+    hash_str += f"_model{[args.ch_conv1, args.ch_conv2, args.ch_conv3]}"
+    hash_str += f"{[args.l_hidden]}"
     
-    hash_str += f"_{context.nan_mode}" if context.nan_mode is not None else "_None"
-    hash_str += f"_do{[context.data_dropout, context.layer_dropout]}"
-    hash_str += f"_lr[{context.lr}]"
-    hash_str += f"_binary" if context.binary else "_multi"
+    hash_str += f"_{args.nan_mode}" if args.nan_mode is not None else "_None"
+    hash_str += f"_do{[args.data_dropout, args.layer_dropout]}"
+    hash_str += f"_lr[{args.lr}]"
+    hash_str += f"_binary" if args.binary else "_multi"
     
     return hash_str
 
 
-def hash_model(context: Context):
+def hash_model(args):
     hash_str = ""
-    if context.train_n is not None:
-        hash_str += f"train(n){context.train_n}_"
-    elif context.train_k is None:
+    if args.train_n is not None:
+        hash_str += f"train(n){args.train_n}_"
+    elif args.train_k is None:
         hash_str += f"train(full)_"
     else:
-        hash_str += f"train(k){context.train_k}_"
+        hash_str += f"train(k){args.train_k}_"
     
-    hash_str += f"_batch{context.batch_size}"
+    hash_str += f"_batch{args.batch_size}"
     
-    hash_str += f"_model{[context.ch_conv1, context.ch_conv2, context.ch_conv3]}"
-    hash_str += f"{[context.l_hidden]}"
+    hash_str += f"_model{[args.ch_conv1, args.ch_conv2, args.ch_conv3]}"
+    hash_str += f"{[args.l_hidden]}"
     
-    hash_str += f"_{context.nan_mode}" if context.nan_mode is not None else "_None"
-    hash_str += f"_do{[context.data_dropout, context.layer_dropout]}"
-    hash_str += f"_lr[{context.lr}]"
-    hash_str += f"_binary" if context.binary else "_multi"
+    hash_str += f"_{args.nan_mode}" if args.nan_mode is not None else "_None"
+    hash_str += f"_do{[args.data_dropout, args.layer_dropout]}"
+    hash_str += f"_lr[{args.lr}]"
+    hash_str += f"_binary" if args.binary else "_multi"
     
     return hash_str
 
@@ -233,30 +312,12 @@ class Metric:
         if self.binary:
             return (f"Metric("
                     f"tss: {self.tss * 100:5.2f}, "
-                    f"hss2: {self.hss2 * 100: 5.2f}, "
                     f"cm: {self.cm.tolist()})")
         else:
             return (f"Metric("
                     f"avg tss: {np.average(self.tss * 100): 5.2f}, "
                     f"tss: {self.tss * 100},"
-                    f"hss2: {self.hss2 * 100} "
                     f"cm: {self.cm.tolist()})")
-    
-    # def __str__(self, full=False):
-    #     return (f"accuracy {self.accuracy * 100:5.2f}% | "
-    #             f"precision {self.precision * 100:6.2f} | "
-    #             f"recall {self.recall * 100:6.2f} | "
-    #             f"f1 {self.f1 * 100:6.2f} | "
-    #             f"TPR {self.tpr * 100:6.2f} | "
-    #             f"TNR {self.tnr * 100:6.2f} | "
-    #             f"TSS {self.tss * 100:6.2f} | "
-    #             f"HSS1 {self.hss1 * 100:8.2f} | "
-    #             f"HSS2 {self.hss2 * 100:8.2f} | "
-    #             f"GS {self.gs * 100:8.2f} | "
-    #             f"tp {self.tp:5.0f}, "
-    #             f"fp {self.fp:5.0f}, "
-    #             f"tn {self.tn:5.0f}, "
-    #             f"fn {self.fn:5.0f}")
     
     def __le__(self, other):
         if self.binary:

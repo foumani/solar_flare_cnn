@@ -4,7 +4,6 @@ from copy import copy
 import pandas as pd
 
 import util
-from context import Context
 
 text_normal = "\33[0m"
 text_red = "\33[31m"
@@ -13,10 +12,18 @@ text_blue = "\33[34m"
 text_negative = "\33[7m"
 
 
+def save_report(loc, df, incremental):
+    if incremental and os.path.exists(loc):
+        pre_report_df = pd.read_csv(loc)
+        pd.concat([pre_report_df, df]).round(
+            decimals=4).to_csv(loc, index=False)
+        df.drop(df.index, inplace=True)
+    else:
+        df.round(decimals=4).to_csv(loc, index=False)
+
+
 class BaselineReporter:
-    def __init__(self, split_report_filename, model_report_filename):
-        self.split_report_filename = split_report_filename
-        self.model_report_filename = model_report_filename
+    def __init__(self):
         self.metric = None
         self.split_report_df = pd.DataFrame(
             columns=["run no.", "test_part", "train_k", "train_n", "nan_mode",
@@ -25,45 +32,32 @@ class BaselineReporter:
             columns=["run no.", "train_k", "train_n", "nan_mode",
                      "normalization", "all_test_runs"])
     
-    def model_row(self, context: Context, all_test_metric):
+    def model_row(self, args, all_test_metric):
         self.model_report_df.loc[len(self.model_report_df.index)] = [
-            context.run_no,
-            context.train_k,
-            context.train_n,
-            context.nan_mode,
-            context.normalization_mode,
+            args.run_no,
+            args.train_k,
+            args.train_n,
+            args.nan_mode,
+            args.normalization_mode,
             all_test_metric]
     
-    def split_row(self, context, test_metric):
+    def split_row(self, args, test_metric):
         self.split_report_df.loc[len(self.split_report_df.index)] = [
-            context.run_no,
-            context.test_part,
-            context.train_k,
-            context.train_n,
-            context.nan_mode,
-            context.normalization_mode,
+            args.run_no,
+            args.test_part,
+            args.train_k,
+            args.train_n,
+            args.nan_mode,
+            args.normalization_mode,
             test_metric]
     
-    def save_split_report(self, incremental=False):
-        loc = os.path.join(Context.log_dir, self.split_report_filename)
-        if incremental and os.path.exists(loc):
-            pre_report_df = pd.read_csv(loc)
-            pd.concat([pre_report_df, self.split_report_df]).round(
-                decimals=4).to_csv(loc, index=False)
-            self.split_report_df.drop(self.split_report_df.index,
-                                      inplace=True)
-        else:
-            self.split_report_df.round(decimals=4).to_csv(loc, index=False)
+    def save_split_report(self, args, incremental=False):
+        loc = os.path.join(args.log_dir, args.split_report_filename)
+        save_report(loc, self.model_report_df, incremental)
     
-    def save_model_report(self, incremental=False):
-        loc = os.path.join(Context.log_dir, self.model_report_filename)
-        if incremental and os.path.exists(loc):
-            pre_report_df = pd.read_csv(loc)
-            pd.concat([pre_report_df, self.model_report_df]).round(
-                decimals=4).to_csv(loc, index=False)
-            self.model_report_df.drop(self.model_report_df.index, inplace=True)
-        else:
-            self.model_report_df.round(decimals=4).to_csv(loc, index=False)
+    def save_model_report(self, args, incremental=False):
+        loc = os.path.join(args.log_dir, args.model_report_filename)
+        save_report(loc, self.model_report_df, incremental)
 
 
 class Reporter:
@@ -84,119 +78,52 @@ class Reporter:
                      "class_importance", "lr", "all_best_val_runs",
                      "all_test_runs"])
     
-    def new_run(self):
-        self.report_df = pd.DataFrame(columns=[
-            "epoch", "avg_loss", "tp", "fp", "tn", "fn", "p", "n", "a",
-            "accuracy", "precision", "recall", "f1", "tss", "hss1", "hss2", "gs"
-        ])
-    
-    def model_row(self, context: Context, all_val_metric, all_test_metric):
+    def model_row(self, args, val_metric, test_metric):
         self.model_report_df.loc[len(self.model_report_df.index)] = [
-            util.hash_model(context),
-            context.run_no,
-            context.batch_size,
-            context.train_k,
-            context.train_n,
-            [context.ch_conv1, context.ch_conv2, context.ch_conv3],
-            [context.l_hidden],
-            [context.data_dropout, context.layer_dropout],
-            context.nan_mode,
-            context.class_importance,
-            context.lr,
-            all_val_metric,
-            all_test_metric]
+            util.hash_model(args),
+            args.run_no,
+            args.batch_size,
+            args.train_k,
+            args.train_n,
+            [args.ch_conv1, args.ch_conv2, args.ch_conv3],
+            [args.l_hidden],
+            [args.data_dropout, args.layer_dropout],
+            args.nan_mode,
+            args.class_importance,
+            args.lr,
+            val_metric,
+            test_metric]
     
-    def split_row(self, context, best_val_metric, test_metric):
+    def split_row(self, args, best_val_metric, test_metric):
         self.split_report_df.loc[len(self.split_report_df.index)] = [
-            util.hash_name(context),
-            util.hash_model(context),
-            context.run_no,
-            context.val_part if context.val_part is not None else context.val_p,
-            context.test_part,
-            context.batch_size,
-            context.train_k,
-            context.train_n,
-            [context.ch_conv1, context.ch_conv2, context.ch_conv3],
-            [context.l_hidden],
-            [context.data_dropout, context.layer_dropout],
-            context.nan_mode,
-            context.class_importance,
-            context.lr,
+            util.hash_name(args),
+            util.hash_model(args),
+            args.run_no,
+            args.val_part if args.val_part is not None else args.val_p,
+            args.test_part,
+            args.batch_size,
+            args.train_k,
+            args.train_n,
+            [args.ch_conv1, args.ch_conv2, args.ch_conv3],
+            [args.l_hidden],
+            [args.data_dropout, args.layer_dropout],
+            args.nan_mode,
+            args.class_importance,
+            args.lr,
             best_val_metric,
             test_metric]
     
-    def save_split_report(self, incremental=False):
-        loc = os.path.join(Context.log_dir, Context.split_report_filename)
-        if incremental and os.path.exists(loc):
-            pre_report_df = pd.read_csv(loc)
-            pd.concat([pre_report_df, self.split_report_df]).round(
-                decimals=4).to_csv(loc, index=False)
-            self.split_report_df.drop(self.split_report_df.index,
-                                      inplace=True)
-        else:
-            self.split_report_df.round(decimals=4).to_csv(loc, index=False)
+    def save_split_report(self, args, incremental=False):
+        loc = os.path.join(args.log_dir, args.split_report_filename)
+        save_report(loc, self.split_report_df, incremental)
     
-    def save_model_report(self, incremental=False):
-        loc = os.path.join(Context.log_dir, Context.model_report_filename)
-        if incremental and os.path.exists(loc):
-            pre_report_df = pd.read_csv(loc)
-            pd.concat([pre_report_df, self.model_report_df]).round(
-                decimals=4).to_csv(loc, index=False)
-            self.model_report_df.drop(self.model_report_df.index, inplace=True)
-        else:
-            self.model_report_df.round(decimals=4).to_csv(loc, index=False)
-    
-    def run_row(self, epoch):
-        self.report_df.loc[len(self.report_df.index)] = [epoch,
-                                                         self.loss,
-                                                         self.metric.tp,
-                                                         self.metric.fp,
-                                                         self.metric.tn,
-                                                         self.metric.fn,
-                                                         self.metric.p,
-                                                         self.metric.n,
-                                                         self.metric.a,
-                                                         self.metric.accuracy,
-                                                         self.metric.precision,
-                                                         self.metric.recall,
-                                                         self.metric.f1,
-                                                         self.metric.tss,
-                                                         self.metric.hss1,
-                                                         self.metric.hss2,
-                                                         self.metric.gs]
+    def save_model_report(self, args, incremental=False):
+        loc = os.path.join(args.log_dir, args.model_report_filename)
+        save_report(loc, self.model_report_df, incremental)
     
     def update(self, loss, metric):
         self.metric = copy(metric)
         self.loss = loss
-    
-    def save_run_report(self, hash_name, incremental=False):
-        return
-        loc = os.path.join(Context.log_dir, f"{hash_name}-report.csv")
-        if incremental and os.path.exists(loc):
-            pre_report_df = pd.read_csv(loc)
-            pd.concat([pre_report_df, self.report_df]).to_csv(loc, index=False)
-        else:
-            self.report_df.to_csv(loc, index=False)
-    
-    def save_split_report(self, incremental=False):
-        loc = os.path.join(Context.log_dir, Context.split_report_filename)
-        if incremental and os.path.exists(loc):
-            pre_report_df = pd.read_csv(loc)
-            pd.concat([pre_report_df, self.split_report_df]).round(
-                decimals=4).to_csv(loc, index=False)
-            self.split_report_df.drop(self.split_report_df.index, inplace=True)
-        else:
-            self.split_report_df.round(decimals=4).to_csv(loc, index=False)
-    
-    def save_model_report(self, incremental=False):
-        loc = os.path.join(Context.log_dir, Context.model_report_filename)
-        if incremental and os.path.exists(loc):
-            pre_report_df = pd.read_csv(loc)
-            pd.concat([pre_report_df, self.model_report_df]).round(
-                decimals=4).to_csv(loc, index=False)
-            self.model_report_df.drop(self.model_report_df.index, inplace=True)
-        else:
-            self.model_report_df.round(decimals=4).to_csv(loc, index=False)
     
     def print(self, postfix=""):
         if self.metric.binary:

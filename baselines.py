@@ -1,5 +1,4 @@
 import itertools
-import os
 import random
 import time
 from copy import deepcopy
@@ -7,15 +6,12 @@ from copy import deepcopy
 import numpy as np
 from scipy.stats import skew, kurtosis
 from sklearn.linear_model import RidgeClassifierCV
-from sklearn.metrics import confusion_matrix
 from sklearn.svm import SVC
 from sktime.classification.deep_learning import LSTMFCNClassifier, CNNClassifier
 from sktime.classification.interval_based import CanonicalIntervalForest
-from sktime.clustering.k_means import TimeSeriesKMeans
 from sktime.transformations.panel.rocket import MiniRocketMultivariate
 
 import util
-from context import Context
 from data import Data
 from preprocess import Normalizer
 from reporter import BaselineReporter
@@ -47,7 +43,7 @@ def baseline_svm(binary, X_train, y_train, X_test, y_test):
 
 
 def baseline_minirocket(binary, X_train, y_train, X_test, y_test):
-    minirocket = MiniRocketMultivariate(n_jobs=24)
+    minirocket = MiniRocketMultivariate(n_jobs=64)
     minirocket.fit(X_train)
     X_train_transform = minirocket.transform(X_train)
     classifier = RidgeClassifierCV(alphas=np.logspace(-3, 3, 10))
@@ -71,8 +67,9 @@ def baseline_lstmfcn(binary, X_train, y_train, X_test, y_test):
 
 
 def baseline_cif(binary, X_train, y_train, X_test, y_test):
-    clf = CanonicalIntervalForest(n_estimators=16, n_jobs=16, min_interval=8,
-                                  max_interval=12, n_intervals=4, att_subsample_size=16)
+    clf = CanonicalIntervalForest(n_estimators=16, n_jobs=64, min_interval=8,
+                                  max_interval=12, n_intervals=4,
+                                  att_subsample_size=16)
     clf.fit(X_train, y_train)
     y_test_prediction = clf.predict(X_test)
     return Metric(y_true=y_test, y_pred=y_test_prediction, binary=binary)
@@ -91,52 +88,47 @@ def baseline_cnn(binary, X_train, y_train, X_test, y_test):
     return Metric(y_true=y_test, y_pred=y_test_prediction, binary=binary)
 
 
-def cross_val(context, data, reporter, method):
-    all_tests_metric = Metric(binary=context.binary)
+def cross_val(args, data, reporter, method):
+    all_tests_metric = Metric(binary=args.binary)
     for test_part in range(1, 6):
         start_time = time.time()
-        context.test_part = test_part
-        X_train, y_train, _, _, X_test, y_test = data.numpy_datasets(context)
-        test_metric = method(context.binary, X_train, y_train, X_test, y_test)
+        args.test_part = test_part
+        X_train, y_train, _, _, X_test, y_test = data.numpy_datasets(args)
+        test_metric = method(args.binary, X_train, y_train, X_test, y_test)
         run_time = time.time() - start_time
-        print(
-            f"test part {test_part}: {test_metric}, run time: {run_time * 1000:.0f} ms")
+        print(f"test part {test_part}: {test_metric}, "
+              f"run time: {run_time * 1000:.0f} ms")
         all_tests_metric += test_metric
         if reporter is not None:
-            reporter.split_row(context, test_metric)
+            reporter.split_row(args, test_metric)
     print(f"method {method.__name__} all tests: {all_tests_metric}")
     return all_tests_metric
 
 
-def multi_run(context, data, method, report=True):
-    binary_str = "binary" if context.binary else "multi"
-    split_report_filename = f"{method.__name__}-split-{binary_str}.csv"
-    model_report_filename = f"{method.__name__}-model-{binary_str}.csv"
+def multi_run(args, data, method, report=True):
+    binary_str = "binary" if args.binary else "multi"
+    args.split_report_filename = f"{method.__name__}-split-{binary_str}.csv"
+    args.model_report_filename = f"{method.__name__}-model-{binary_str}.csv"
     if report:
-        reporter = BaselineReporter(split_report_filename,
-                                    model_report_filename)
+        reporter = BaselineReporter()
     else:
         reporter = None
-    for i in range(context.run_times):
-        context.run_no = i
-        test_metric = cross_val(context, data, reporter, method)
-        reporter.model_row(context, test_metric)
+    for i in range(args.run_times):
+        args.run_no = i
+        test_metric = cross_val(args, data, reporter, method)
+        reporter.model_row(args, test_metric)
     if report:
-        reporter.save_model_report(incremental=True)
-        reporter.save_split_report(incremental=True)
+        reporter.save_model_report(args, incremental=True)
+        reporter.save_split_report(args, incremental=True)
 
 
-def randomized_search(context, data, method):
+def randomized_search(args, data, method):
     dataset_grid = []
     training_modes = ["k", "n"]  # 2
-    if context.binary:
+    if args.binary:
         bcq = [i for i in range(400, 4001, 400)]  # 10
         mx = [i for i in range(200, 1401, 200)]  # 7
         dataset_grid.extend(list(itertools.product(bcq, mx)))
-        class_importances = [None,
-                             [0.4, 0.6],
-                             [0.3, 0.7],
-                             [0.2, 0.8]]  # 4
     else:
         q = [i for i in range(400, 1601, 400)]  # 4
         bc = [i for i in range(300, 1201, 300)]  # 4
@@ -147,7 +139,7 @@ def randomized_search(context, data, method):
     normalizations = [Normalizer.scale, Normalizer.z_score]
     grid = list(itertools.product(training_modes, dataset_grid, nan_modes,
                                   normalizations))
-    randomized = random.sample(grid, k=context.n_random_search)
+    randomized = random.sample(grid, k=args.n_param_search)
     print(f"Searching through {len(randomized)} items")
     for training_mode, split, nan_mode, normalization in randomized:
         print()
@@ -157,28 +149,20 @@ def randomized_search(context, data, method):
               f"nan_mode: {nan_mode}, "
               f"normalization: {normalization}")
         if training_mode == "n":
-            context.train_n = split
-            context.train_k = None
+            args.train_n = split
+            args.train_k = None
         else:
-            context.train_k = split
-            context.train_n = None
-        context.nan_mode = nan_mode
-        context.normalization_mode = normalization
-        multi_run(context, data, method)
+            args.train_k = split
+            args.train_n = None
+        args.nan_mode = nan_mode
+        args.normalization_mode = normalization
+        multi_run(args, data, method)
 
 
 def main():
     start = time.time()
-    print(f"cpu count: {os.cpu_count()}")
-    Context.data_dir = "/home/foumani/data/solar_flare_prediction"
-    Context.files_df_filename = "all_files.csv"
-    Context.files_np_filename = "full_data_X_1_25.npy"
-    Context.log_dir = "/home/foumani/workspace/solar_flare_prediction/log"
-    prog_args = util.arg_parse()
-    context = Context(run_times=prog_args.run_times,
-                      binary=prog_args.binary,
-                      n_random_search=prog_args.n_param_search)
-    data = Data(verbose=False)
+    prog_args = util.baseline_arg_parse()
+    data = Data(prog_args)
     method = None
     if prog_args.method == "svm":
         method = baseline_svm
@@ -191,7 +175,7 @@ def main():
     elif prog_args.method == "cnn":
         method = baseline_cnn
     print(method.__name__)
-    randomized_search(context, data, method)
+    randomized_search(prog_args, data, method)
     print(f"{(time.time() - start) * 1000:.1f} ms")
 
 
