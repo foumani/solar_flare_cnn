@@ -44,13 +44,13 @@ commands.
 * For binary-class classification:
 
 ```bash
-python train.py --datadir <data_dir> --logdir log --paramsearch 500
+python train.py --datadir <data_dir> --logdir log --random_search 500
 ```
 
 * For multi-class classification:
 
 ```bash
-python train.py --datadir <data_dir> --logdir log --paramsearch 500 --multi
+python train.py --datadir <data_dir> --logdir log --random_search 500 --multi
 ```
 
 The resutls (comparison between different hyper-parameters) are saved
