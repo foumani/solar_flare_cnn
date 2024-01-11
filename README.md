@@ -2,6 +2,11 @@ This repository contains the source code for paper `Convolutional Neural
 Network-based Solar Flare Prediction using Multivariate Time-Series of the Solar
 Magnetic Field Parameters`.
 
+## Experimental Settings
+The experiments were conducted on a system with an Intel(R) Xeon(R) Gold 5220R CPU, a NVIDIA RTX A5000 GPU, and 756 GB of RAM.
+Please note that the RAM and GPU RAM requirements for this code is high and program ram usage can go up to 128 GB and its GPU RAM usage
+can go up to 16GB.
+
 ## Installing Packages
 
 Using python version 3.8.10 run the following command.
