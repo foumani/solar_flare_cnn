@@ -5,26 +5,33 @@ import baselines
 import train
 import util
 from data import Data
+from reporter import Reporter
 from util import Metric
 
 
 def run_experiment(args, data, method):
     run_vals = []
-    for _ in range(10):
+    for _ in range(5):
         test = baselines.cross_val(args, data, None, method)
         run_vals.append(test)
     
     print(f"method {method.__name__} runvals = {run_vals}, "
           f"avg: {np.average([val.tss for val in run_vals])}")
-    
-    np.save(f"./experiments_plot/{method.__name__}_{args.binary}_cm.npy",
+
+    poster = f"_{args.poster}" if args.poster is not None else ""
+    np.save(f"./experiments_plot/{method.__name__}_{args.binary}{poster}_cm.npy",
             np.array([run_val.cm for run_val in run_vals]))
 
 
-def model_experiment(args, data, n=1, save=True):
+def model_experiment(args, data, n=1, save=True, seeds=[3764, 7078]):
     run_vals = []
-    for _ in range(n):
-        val, test = train.cross_val(args, data, None)
+    for run_no in range(n):
+        args.run_no = run_no
+        args.rand_seed = seeds[0]
+        args.np_seed = seeds[1]
+        if seeds[2] is not None:
+            args.torch_seed = seeds[2][run_no]
+        val, test = train.cross_val(args, data, Reporter())
         run_vals.append(test)
     
     if save:
@@ -32,102 +39,132 @@ def model_experiment(args, data, n=1, save=True):
             f"./experiments_plot/train_{args.binary}_cm_{args.ablation}.npy",
             np.array([run_val.cm for run_val in run_vals]))
 
+def svm_experiments(args, data, opt_args, seeds=[3764, 7078]):
 
-def svm_experiments(args, data):
-    args.train_n = None
-    args.train_k = [3200, 1200]
-    args.nan_mode = "avg"
-    args.normalization_mode = "z_score"
+    if opt_args:
+        args.train_n = None
+        args.train_k = [3200, 1200]
+        args.nan_mode = "avg"
+        args.normalization_mode = "z_score"
+    else:
+        args = update_to_model_opt(args)
     args.binary = True
+    args.rand_seed = seeds[0]
+    args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_svm)
     
-    args.train_n = [800, 300, 200, 160]
-    args.train_k = None
-    args.nan_mode = 0
-    args.normalization_mode = "z_score"
-    args.binary = False
-    run_experiment(args, data, baselines.baseline_svm)
+    # args.train_n = [800, 300, 200, 160]
+    # args.train_k = None
+    # args.nan_mode = 0
+    # args.normalization_mode = "z_score"
+    # args.binary = False
+    # run_experiment(args, data, baselines.baseline_svm)
 
 
-def minirocket_experiments(args, data):
-    args.train_n = [400, 200]
-    args.train_k = None
-    args.nan_mode = 0
-    args.normalization_mode = "scale"
+def minirocket_experiments(args, data, opt_args, seeds=[3764, 7078]):
+    if opt_args:
+        args.train_n = [400, 200]
+        args.train_k = None
+        args.nan_mode = 0
+        args.normalization_mode = "scale"
+    else:
+        args = update_to_model_opt(args)
     args.binary = True
+    args.rand_seed = seeds[0]
+    args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_minirocket)
     
-    args.train_n = None
-    args.train_k = [400, 300, 200, 40]
-    args.nan_mode = 0
-    args.normalization_mode = "z_score"
-    args.binary = False
-    run_experiment(args, data, baselines.baseline_minirocket)
+    # args.train_n = None
+    # args.train_k = [400, 300, 200, 40]
+    # args.nan_mode = 0
+    # args.normalization_mode = "z_score"
+    # args.binary = False
+    # run_experiment(args, data, baselines.baseline_minirocket)
 
 
-def lstm_experiments(args, data):
-    args.train_n = None
-    args.train_k = [1200, 400]
-    args.nan_mode = None
-    args.normalization_mode = "scale"
+def lstm_experiments(args, data, opt_args, seeds=[3764, 7078]):
+    if opt_args:
+        args.train_n = None
+        args.train_k = [1200, 400]
+        args.nan_mode = None
+        args.normalization_mode = "scale"
+    else:
+        args = update_to_model_opt(args)
     args.binary = True
+    args.rand_seed = seeds[0]
+    args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_lstmfcn)
     
-    args.train_n = [1600, 900, 200, 160]
-    args.train_k = None
-    args.nan_mode = 0
-    args.normalization_mode = "z_score"
-    args.binary = False
-    run_experiment(args, data, baselines.baseline_lstmfcn)
+    # args.train_n = [1600, 900, 200, 160]
+    # args.train_k = None
+    # args.nan_mode = 0
+    # args.normalization_mode = "z_score"
+    # args.binary = False
+    # run_experiment(args, data, baselines.baseline_lstmfcn)
 
 
-def cif_experiments(args, data):
-    args.train_n = [2000, 1400]
-    args.train_k = None
-    args.nan_mode = 0
-    args.normalization_mode = "z_score"
+def cif_experiments(args, data, opt_args, seeds=[3764, 7078]):
+    if opt_args:
+        args.train_n = [2000, 1400]
+        args.train_k = None
+        args.nan_mode = 0
+        args.normalization_mode = "z_score"
+    else:
+        args = update_to_model_opt(args)
     args.binary = True
+    args.rand_seed = seeds[0]
+    args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_cif)
     
-    args.train_n = [400, 300, 200, 160]
-    args.train_k = None
-    args.nan_mode = None
-    args.normalization_mode = "z_score"
-    args.binary = False
-    run_experiment(args, data, baselines.baseline_cif)
+    # args.train_n = [400, 300, 200, 160]
+    # args.train_k = None
+    # args.nan_mode = None
+    # args.normalization_mode = "z_score"
+    # args.binary = False
+    # run_experiment(args, data, baselines.baseline_cif)
 
 
-def cnn_experiments(args, data):
-    args.train_n = None
-    args.train_k = [1600, 400]
-    args.nan_mode = 0
-    args.normalization_mode = "scale"
+def cnn_experiments(args, data, opt_args, seeds=[3764, 7078]):
+    if opt_args:
+        args.train_n = None
+        args.train_k = [1600, 400]
+        args.nan_mode = 0
+        args.normalization_mode = "scale"
+    else:
+        args = update_to_model_opt(args)
     args.binary = True
+    args.rand_seed = seeds[0]
+    args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_cnn)
     
-    args.train_n = [400, 900, 600, 160]
-    args.train_k = None
-    args.nan_mode = "avg"
-    args.normalization_mode = "scale"
-    args.binary = False
-    run_experiment(args, data, baselines.baseline_cnn)
+    # args.train_n = [400, 900, 600, 160]
+    # args.train_k = None
+    # args.nan_mode = "avg"
+    # args.normalization_mode = "scale"
+    # args.binary = False
+    # run_experiment(args, data, baselines.baseline_cnn)
 
 
 def optimal_args(args, binary):
     if binary:
-        args.train_n = [4000, 2200]
-        args.ch_conv1 = 64
-        args.ch_conv2 = 32
-        args.ch_conv3 = 0
-        args.l_hidden = 0
-        args.nan_mode = "avg"
+        args.train_n = [1400, 1000]
+        args.ch_conv1 = 32
+        args.ch_conv2 = 64
+        args.ch_conv3 = 128
+        args.l_hidden1 = 64
+        args.l_hidden2 = 32
+        args.nan_mode = 0
         args.batch_size = 256
         args.normalization_mode = "scale"
-        args.data_dropout = 0.1
+        args.data_dropout = 0.3
         args.layer_dropout = 0.1
-        args.val_p = 0.4
-        args.class_importance = [0.3, 0.7]
-        args.binary = True
+        args.class_importance = [0.5, 0.5]
+        args.val_p = 0.3
+        args.run_no = 5
+        args.cache = True
+        args.rand_seed = 3764
+        args.np_seed = 7078
+        args.torch_seeds = [1046, 35030, 92020, 16679, 22678]
     else:
         args.batch_size = 256
         args.train_n = [2000, 2000, 400, 120]
@@ -148,19 +185,26 @@ def optimal_args(args, binary):
     args.ablation = False
     return args
 
+def update_to_model_opt(args):
+    args.train_k = None
+    args.train_n = [1400, 1000]
+    args.nan_mode = 0
+    args.normalization_mode = "scale"
+    return args
+
 
 def model_experiments(args, data):
     args = optimal_args(args, binary=True)
-    model_experiment(args, data, n=10)
+    model_experiment(args, data, n=5, seeds=[args.rand_seed, args.np_seed, args.torch_seeds])
     
-    args.ablation = True
+    # args.ablation = True
     # Since we only need binary classification size for the last layer
-    args.ch_conv2 = 2
+    # args.ch_conv2 = 2
     # Everything else is same as default binary classification
-    model_experiment(args, data, n=10)
+    # model_experiment(args, data, n=5)
     
-    args = optimal_args(args, binary=False)
-    model_experiment(args, data, n=10)
+    # args = optimal_args(args, binary=False)
+    # model_experiment(args, data, n=10)
 
 
 def tuning_experiments(args, data):
@@ -312,21 +356,24 @@ def main():
     baseline_args = util.baseline_arg_parse()
     model_args = util.train_arg_parse()
     data = Data(baseline_args, verbose=False)
+    baseline_args.poster = "same_seed"
     
-    model_experiments(model_args, data)
-    plot_ablation_comparison()
-    svm_experiments(baseline_args, data)
-    lstm_experiments(baseline_args, data)
-    minirocket_experiments(baseline_args, data)
-    cif_experiments(baseline_args, data)
-    cnn_experiments(baseline_args, data)
-    plot_algorithm_comparisons(False)
-    plot_algorithm_comparisons(True)
-    
-    tuning_experiments(model_args, data)
-    plot_tuning_experiments()
-
-    draw_embeddings_tsne(model_args, data)
+    args = optimal_args(model_args, binary=True)
+    # model_experiment(args, data, n=1)
+    # model_experiments(model_args, data)
+    # plot_ablation_comparison()
+    # svm_experiments(baseline_args, data, opt_args=False)
+    # lstm_experiments(baseline_args, data, opt_args=False)
+    minirocket_experiments(baseline_args, data, opt_args=False)
+    cnn_experiments(baseline_args, data, opt_args=False)
+    cif_experiments(baseline_args, data, opt_args=False)
+    # plot_algorithm_comparisons(False)
+    # plot_algorithm_comparisons(True)
+    #
+    # tuning_experiments(model_args, data)
+    # plot_tuning_experiments()
+    #
+    # draw_embeddings_tsne(model_args, data)
 
 
 if __name__ == "__main__":

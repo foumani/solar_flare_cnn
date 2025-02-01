@@ -46,11 +46,15 @@ def train_arg_parse():
     if not os.path.exists("./plots"):
         os.makedirs("./plots")
     
+    # args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
+    # args.model_report_filename = f"model_report_{'binary' if args.binary else 'multi'}.csv"
+
     args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
-    args.model_report_filename = f"model_report_{'binary' if args.binary else 'multi'}.csv"
+    args.model_report_filename = f"seeded_best_model_report_{'binary' if args.binary else 'multi'}.csv"
     
-    args.device = torch.device(f"cuda" if torch.cuda.is_available()
+    args.device = torch.device(f"cuda:3" if torch.cuda.is_available()
                                else "cpu")
+    print(args.device)
     return args
 
 
@@ -99,6 +103,7 @@ def common_arg_parse():
     parser.add_argument("--valpart", dest="val_part", default=None, type=int,
                         help="Partition of SWAN-SF set as validation. "
                              "It is mutually exclusive with valp.")
+    parser.add_argument("--cache", dest="cache", action="store_true")
     return parser
 
 
@@ -130,7 +135,7 @@ def hash_name(args):
     hash_str += f"_batch{args.batch_size}"
     
     hash_str += f"_model{[args.ch_conv1, args.ch_conv2, args.ch_conv3]}"
-    hash_str += f"{[args.l_hidden]}"
+    hash_str += f"{[args.l_hidden1, args.l_hidden2]}"
     
     hash_str += f"_{args.nan_mode}" if args.nan_mode is not None else "_None"
     hash_str += f"_do{[args.data_dropout, args.layer_dropout]}"
@@ -152,7 +157,7 @@ def hash_model(args):
     hash_str += f"_batch{args.batch_size}"
     
     hash_str += f"_model{[args.ch_conv1, args.ch_conv2, args.ch_conv3]}"
-    hash_str += f"{[args.l_hidden]}"
+    hash_str += f"{[args.l_hidden1, args.l_hidden2]}"
     
     hash_str += f"_{args.nan_mode}" if args.nan_mode is not None else "_None"
     hash_str += f"_do{[args.data_dropout, args.layer_dropout]}"
@@ -312,6 +317,7 @@ class Metric:
         if self.binary:
             return (f"Metric("
                     f"tss: {self.tss * 100:5.2f}, "
+                    f"f1:  {self.f1 * 100:5.2f}, "
                     f"cm: {self.cm.tolist()})")
         else:
             return (f"Metric("

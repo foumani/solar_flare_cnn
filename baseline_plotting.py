@@ -209,12 +209,12 @@ def main():
     #     f"runvals = {run_vals}, avg: {np.average([val.tss for val in run_vals])}")
     # np.save(f"./experiments_plot/{method.__name__}_{args.binary}_cm.npy",
     #         np.array([run_val.cm for run_val in run_vals]))
-    lstm_experiments(args, data)
-    svm_experiments(args, data)
-    minirocket_experiments(args, data)
+    # lstm_experiments(args, data)
+    # svm_experiments(args, data)
+    # minirocket_experiments(args, data)
     cif_experiments(args, data)
-    cnn_experiments(args, data)
-    model_experiments(args, data)
+    # cnn_experiments(args, data)
+    # model_experiments(args, data)
 
 
 if __name__ == "__main__":

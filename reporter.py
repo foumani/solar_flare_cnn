@@ -75,7 +75,7 @@ class Reporter:
         self.model_report_df = pd.DataFrame(
             columns=["id", "run no.", "batch_size", "train_k", "train_n",
                      "ch_conv", "l_hidden", "dropout", "nan_mode",
-                     "class_importance", "lr", "all_best_val_runs",
+                     "class_importance", "lr", "rand_seed", "np_seed", "torch_seed", "all_best_val_runs",
                      "all_test_runs"])
     
     def model_row(self, args, val_metric, test_metric):
@@ -86,11 +86,14 @@ class Reporter:
             args.train_k,
             args.train_n,
             [args.ch_conv1, args.ch_conv2, args.ch_conv3],
-            [args.l_hidden],
+            [args.l_hidden1, args.l_hidden2],
             [args.data_dropout, args.layer_dropout],
             args.nan_mode,
             args.class_importance,
             args.lr,
+            args.rand_seed,
+            args.np_seed,
+            args.torch_seed,
             val_metric,
             test_metric]
     
@@ -105,7 +108,7 @@ class Reporter:
             args.train_k,
             args.train_n,
             [args.ch_conv1, args.ch_conv2, args.ch_conv3],
-            [args.l_hidden],
+            [args.l_hidden1, args.l_hidden2],
             [args.data_dropout, args.layer_dropout],
             args.nan_mode,
             args.class_importance,

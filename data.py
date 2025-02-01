@@ -33,7 +33,7 @@ class Data:
         create_files_df_if_not_exists(args.data_dir, args.files_df_filename)
         self.all_files_df = read_files_df(args.data_dir, args.files_df_filename)
         create_files_numpy_if_not_exists(args.data_dir,
-                                         args.files_df_filename,
+                                         args.files_np_filename,
                                          self.all_files_df)
         self.all_files_np = read_files_np(args.data_dir, args.files_np_filename)
         self.normalizer = preprocess.Normalizer()
@@ -75,21 +75,22 @@ class Data:
                                                   args.normalization_mode,
                                                   args.data_dir,
                                                   nan_mode=args.nan_mode,
-                                                  binary=args.binary)
+                                                  binary=args.binary,
+                                                  cache=args.cache)
         if self.verbose:
             self.print_stats("test ", y_test_np, args.binary)
         
         return X_train_np, y_train_np, X_val_np, y_val_np, X_test_np, y_test_np
     
     def numpy_dataset(self, parts, normalization_mode, data_dir, k=None, n=None,
-                      train=False, nan_mode=None, binary=True):
+                      train=False, nan_mode=None, binary=True, cache=False):
         hash_dataset = f"{util.hash_dataset(parts, k, n, nan_mode, binary)}"
         dataset_loc = os.path.join(data_dir, hash_dataset)
-        if hash_dataset in self.saved_datasets:
+        if cache and hash_dataset in self.saved_datasets:
             (X, y, norm_vals) = deepcopy(self.saved_datasets[hash_dataset])
             if train:
                 self.normalizer = preprocess.Normalizer(vals=norm_vals)
-        elif n is None and k is None and os.path.exists(f"{dataset_loc}.npz"):
+        elif cache and n is None and k is None and os.path.exists(f"{dataset_loc}.npz"):
             with np.load(f"{dataset_loc}.npz") as np_data:
                 X = np_data['X']
                 y = np_data['y']
@@ -103,10 +104,11 @@ class Data:
             X, y = preprocess.nan_to_num(X, y, nan_mode)
             self.normalizer.fit(X)
             norm_vals = self.normalizer.values()
-            if n is None and k is None:
+            if not cache and n is None and k is None:
                 np.savez(dataset_loc, X=X, y=y, norm_vals=norm_vals)
             X, y = self.preprocess(X, y, normalization_mode, train)
-            self.saved_datasets[hash_dataset] = (X, y, norm_vals)
+            if cache:
+                self.saved_datasets[hash_dataset] = (X, y, norm_vals)
         return X, y
     
     def preprocess(self, X, y, normalization_mode, train=False):
@@ -145,9 +147,10 @@ class Data:
             X_val = torch.tensor(X_val_np, dtype=torch.float32).to(args.device)
             y_val = torch.tensor(y_val_np, dtype=torch.long).to(args.device)
             val = [util.DataPair(X_val, y_val)]
-        X_test = torch.tensor(X_test_np, dtype=torch.float32).to(args.device)
-        y_test = torch.tensor(y_test_np, dtype=torch.long).to(args.device)
-        test = [util.DataPair(X_test, y_test)]
+        test_set_size = args.batch_size if args.batch_size is not None else 1024
+        X_test = torch.split(torch.tensor(X_test_np, dtype=torch.float32), test_set_size)
+        y_test = torch.split(torch.tensor(y_test_np, dtype=torch.long), test_set_size)
+        test = [util.DataPair(X_test[i], y_test[i]) for i in range(len(X_test))]
         return train, val, test
 
 
@@ -302,6 +305,7 @@ def create_files_df_if_not_exists(data_dir, files_df_filename):
 
 
 def create_files_numpy_if_not_exists(data_dir, files_np_filename, files_df):
+    print(os.path.join(data_dir, files_np_filename))
     if not os.path.exists(os.path.join(data_dir, files_np_filename)):
         print("Creating all files numpy ...")
         create_files_numpy(data_dir,

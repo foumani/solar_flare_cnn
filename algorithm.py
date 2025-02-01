@@ -31,7 +31,7 @@ class Algorithm:
     def train(self, early_stop=5):
         epoch, early_stop_cnt = 0, 0
         train_metric = Metric()
-        best_tss = 0.0
+        best_f1 = 0.0
         while early_stop_cnt <= early_stop and epoch <= self.args.stop:
             epoch_start_time = time.time()
             if self.verbose:
@@ -46,15 +46,15 @@ class Algorithm:
                 else:
                     self.model.eval()
                 dataholder = self.dataholder[phase]
-                epoch_loss, metric = self.run_epoch(dataholder)
+                epoch_loss, metric, _ = self.run_epoch(dataholder)
                 if self.reporter is not None:
                     self.reporter.update(epoch_loss, metric)
                 if phase == "val":
                     if self.verbose:
                         print(reporter.text_blue)
-                    if best_tss <= np.average(train_metric.tss):
+                    if best_f1 <= np.average(train_metric.f1):
                         early_stop_cnt = -1
-                        best_tss = np.average(train_metric.tss)
+                        best_f1 = np.average(train_metric.f1)
                         self.best_val_run_metric = deepcopy(metric)
                         self.best_model_wts = deepcopy(self.model.state_dict())
                     else:
@@ -78,7 +78,9 @@ class Algorithm:
     def test(self, dataholder):
         self.model.load_state_dict(self.best_model_wts)
         self.model.eval()
-        avg_loss, metric = self.run_epoch(dataholder)
+        epoch_start_time = time.time()
+        avg_loss, metric, l_dataloader = self.run_epoch(dataholder)
+        print(f"\t{(time.time() - epoch_start_time) * 1000:.1f} ms for the test with {l_dataloader} elements")
         if self.reporter is not None:
             self.reporter.update(avg_loss, metric)
         if self.verbose:
@@ -101,7 +103,12 @@ class Algorithm:
     def run_epoch(self, dataloader):
         running_loss, metric = 0, Metric(binary=self.args.binary)
         l_points = 0
+        l_dataloader = 0
         for i, (X, y) in enumerate(dataloader):
+            if X.get_device() != self.args.device:
+                X = X.to(self.args.device)
+            if y.get_device() != self.args.device:
+                y = y.to(self.args.device)
             if self.ablation:
                 output = self.model.ablation_study(X)
             else:
@@ -117,4 +124,5 @@ class Algorithm:
                 metric += Metric(y.cpu().numpy(), y_pred.cpu().numpy(),
                                  self.args.binary)
                 l_points += len(y)
-        return running_loss / l_points, metric
+                l_dataloader += len(y)
+        return running_loss / l_points, metric, l_dataloader
