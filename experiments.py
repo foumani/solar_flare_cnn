@@ -500,14 +500,17 @@ def set_randoms(args):
 
 
 def main():
-    baseline_args = util.baseline_arg_parse()
     model_args = util.train_arg_parse()
-    data = Data(baseline_args, verbose=False)
-    baseline_args.poster = "same_seed"
+    util.print_config(model_args)
 
-    args = optimal_args(model_args, binary=True)
+    baseline_args = util.baseline_arg_parse()
+
+    # data = Data(baseline_args, verbose=False)
+    # baseline_args.poster = "same_seed"
+
+    # args = optimal_args(model_args, binary=True)
     # model_experiment(args, data, n=1)
-    model_experiments(model_args, data)
+    # model_experiments(model_args, data)
     # different_parameters_experiments(model_args, data)
     # plot_ablation_comparison()
     # svm_experiments(baseline_args, data, opt_args=False)
