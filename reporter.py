@@ -3,7 +3,7 @@ from copy import copy
 
 import pandas as pd
 
-import util
+import utils
 
 text_normal = "\33[0m"
 text_red = "\33[31m"
@@ -80,7 +80,7 @@ class Reporter:
     
     def model_row(self, args, val_metric, test_metric):
         self.model_report_df.loc[len(self.model_report_df.index)] = [
-            util.hash_model(args),
+            utils.hash_model(args),
             args.run_no,
             args.batch_size,
             args.train_k,
@@ -99,8 +99,8 @@ class Reporter:
     
     def split_row(self, args, best_val_metric, test_metric):
         self.split_report_df.loc[len(self.split_report_df.index)] = [
-            util.hash_name(args),
-            util.hash_model(args),
+            utils.hash_name(args),
+            utils.hash_model(args),
             args.run_no,
             args.val_part if args.val_part is not None else args.val_p,
             args.test_part,

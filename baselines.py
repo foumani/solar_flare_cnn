@@ -11,11 +11,11 @@ from sktime.classification.deep_learning import LSTMFCNClassifier, CNNClassifier
 from sktime.classification.interval_based import CanonicalIntervalForest
 from sktime.transformations.panel.rocket import MiniRocketMultivariate
 
-import util
+import utils
 from data import Data
 from preprocess import Normalizer
 from reporter import BaselineReporter
-from util import Metric
+from utils import Metric
 
 
 def baseline_svm(binary, X_train, y_train, X_test, y_test):
@@ -161,7 +161,7 @@ def randomized_search(args, data, method):
 
 def main():
     start = time.time()
-    args = util.arg_parse()
+    args = utils.arg_parse()
     data = Data(args)
     method = None
     if args.method == "svm":

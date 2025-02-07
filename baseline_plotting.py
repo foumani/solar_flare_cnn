@@ -2,7 +2,7 @@ import numpy as np
 
 import baselines
 import train
-import util
+import utils
 from data import Data
 
 
@@ -146,7 +146,7 @@ def model_experiments(args, data):
 
 
 def main():
-    args = util.baseline_arg_parse()
+    args = utils.baseline_arg_parse()
     data = Data(args, verbose=False)
     # method = None
     # if args.method == "svm":

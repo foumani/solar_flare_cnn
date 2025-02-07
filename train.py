@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 from sklearn.manifold import TSNE
 
-import util
+import utils
 from algorithm import *
 from conv_model import ConvModel
 from data import Data
@@ -68,7 +68,7 @@ def train(args, data: Data, reporter: Reporter):
         draw(args,
              model.exp_last_layer(test[0].X).cpu().detach().numpy(),
              test[0].y.cpu().detach().numpy(),
-             util.hash_name(args),
+             utils.hash_name(args),
              args.binary)
     if reporter is not None:
         reporter.split_row(args, algo.best_val_run_metric, test_metric)
@@ -221,7 +221,7 @@ def single_serach(args, data, reporter):
 def main():
     numpy.set_printoptions(precision=2, formatter={'int': '{:5d}'.format,
                                                    'float': '{:7.2f}'.format})
-    prog_args = util.train_arg_parse()
+    prog_args = utils.train_arg_parse()
     prog_args.cache = True
     print(f"cpu count: {os.cpu_count()}")
     print(f"device: {prog_args.device}")

@@ -1,12 +1,18 @@
 import argparse
 import os
+import random
 from collections import namedtuple
 
 import numpy as np
+import torch
 from sklearn.metrics import confusion_matrix
 
 DataPair = namedtuple("DataPair", ["X", "y"])
 
+def reset_seeds(args):
+    random.seed(args.rand_seed)
+    np.random.seed(args.np_seed)
+    torch.manual_seed(args.torch_seed)
 
 def arg_parse(manual=None):
     parser = common_arg_parse(manual)

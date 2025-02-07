@@ -7,7 +7,7 @@ import torch
 
 import reporter
 from reporter import Reporter
-from util import Metric
+from utils import Metric
 
 
 class Algorithm:

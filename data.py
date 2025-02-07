@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 
 import preprocess
-import util
+import utils
 
 
 class FlairDataset(Dataset):
@@ -84,7 +84,7 @@ class Data:
     
     def numpy_dataset(self, parts, normalization_mode, data_dir, k=None, n=None,
                       train=False, nan_mode=None, binary=True, cache=False):
-        hash_dataset = f"{util.hash_dataset(parts, k, n, nan_mode, binary)}"
+        hash_dataset = f"{utils.hash_dataset(parts, k, n, nan_mode, binary)}"
         dataset_loc = os.path.join(data_dir, hash_dataset)
         if cache and hash_dataset in self.saved_datasets:
             (X, y, norm_vals) = deepcopy(self.saved_datasets[hash_dataset])
@@ -135,7 +135,7 @@ class Data:
         X_train = torch.tensor(X_train_np, dtype=torch.float32, device=args.device)
         y_train = torch.tensor(y_train_np, dtype=torch.long, device=args.device)
         if args.batch_size is None or args.batch_size == 0.0:
-            train = [util.DataPair(X_train, y_train)]
+            train = [utils.DataPair(X_train, y_train)]
         else:
             train_dataset = FlairDataset(X=X_train, y=y_train)
             train = DataLoader(train_dataset,
@@ -146,12 +146,12 @@ class Data:
         else:
             X_val = torch.tensor(X_val_np, dtype=torch.float32, device=args.device)
             y_val = torch.tensor(y_val_np, dtype=torch.long, device=args.device)
-            val = [util.DataPair(X_val, y_val)]
+            val = [utils.DataPair(X_val, y_val)]
         test_set_size = args.batch_size if args.batch_size is not None else 1024
         X_test = torch.split(torch.tensor(X_test_np, dtype=torch.float32), test_set_size)
         y_test = torch.split(torch.tensor(y_test_np, dtype=torch.long), test_set_size)
 
-        test = [util.DataPair(X_test[i], y_test[i]) for i in range(len(X_test))]
+        test = [utils.DataPair(X_test[i], y_test[i]) for i in range(len(X_test))]
         return train, val, test
 
 

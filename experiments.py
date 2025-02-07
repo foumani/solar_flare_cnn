@@ -4,12 +4,10 @@ import numpy as np
 import baselines
 import config
 import train
-import util
+import utils
 from data import Data
 from reporter import Reporter
-from util import Metric
-import random
-import torch
+from utils import Metric
 import time
 
 
@@ -27,15 +25,10 @@ def run_experiment(args, data, method):
             np.array([run_val.cm for run_val in run_vals]))
 
 
-def model_experiment(args, data, n=1, save=True, seeds=[42, 42, 42]):
+def model_experiment(args, data, n=1, save=True):
     run_vals = []
     for run_no in range(n):
         args.run_no = run_no
-        # args.rand_seed = 42
-        # args.np_seed = 42
-        # args.torch_seed = seeds[2]
-        # if seeds[2] is not None:
-        #     args.torch_seed = seeds[2][run_no]
         val, test = train.cross_val(args, data, Reporter())
         run_vals.append(test)
 
@@ -44,68 +37,55 @@ def model_experiment(args, data, n=1, save=True, seeds=[42, 42, 42]):
                 np.array([run_val.cm for run_val in run_vals]))
 
 
-def svm_experiments(args, data, opt_args, seeds=[3764, 7078]):
+def svm_experiments(args, data, opt_args):
     if opt_args:
         args = config.optimal_svm(args, True)
     else:
         args = config.optimal_model(args, True)
-    args.rand_seed = seeds[0]
-    args.np_seed = seeds[1]
+    utils.reset_seeds(args)
     run_experiment(args, data, baselines.baseline_svm)
 
 
-def minirocket_experiments(args, data, opt_args, seeds=[3764, 7078]):
+def minirocket_experiments(args, data, opt_args):
     if opt_args:
         config.optimal_minirocket(args, True)
     else:
         args = config.optimal_model(args, True)
-    args.rand_seed = seeds[0]
-    args.np_seed = seeds[1]
+    utils.reset_seeds(args)
     run_experiment(args, data, baselines.baseline_minirocket)
 
 
-def lstm_experiments(args, data, opt_args, seeds=[3764, 7078]):
+def lstm_experiments(args, data, opt_args):
     if opt_args:
         config.optimal_lstm(args, True)
     else:
         args = config.optimal_model(args, True)
-    args.rand_seed = seeds[0]
-    args.np_seed = seeds[1]
+    utils.reset_seeds(args)
     run_experiment(args, data, baselines.baseline_lstmfcn)
 
 
-def cif_experiments(args, data, opt_args, seeds=[3764, 7078]):
+def cif_experiments(args, data, opt_args):
     if opt_args:
         config.optimal_cif(args, True)
     else:
         args = config.optimal_model(args, True)
-    args.rand_seed = seeds[0]
-    args.np_seed = seeds[1]
+    utils.reset_seeds(args)
     run_experiment(args, data, baselines.baseline_cif)
 
 
-def cnn_experiments(args, data, opt_args, seeds=[3764, 7078]):
+def cnn_experiments(args, data, opt_args):
     if opt_args:
         config.optimal_cnn(args, True)
     else:
         args = config.optimal_model(args, True)
-    args.rand_seed = seeds[0]
-    args.np_seed = seeds[1]
+    utils.reset_seeds(args)
     run_experiment(args, data, baselines.baseline_cnn)
 
 
-def optimal_args(args, binary):
-    return config.optimal_model(args, binary)
-
-
-
 def model_experiments(args, data):
-    args = optimal_args(args, binary=True)
-    random.seed(args.rand_seed)
-    np.random.seed(args.np_seed)
-    torch.manual_seed(args.torch_seed)
-    model_experiment(args, data, n=args.runs,
-                     seeds=[args.rand_seed, args.np_seed, args.torch_seed])
+    args = config.optimal_model(args, binary=True)
+    utils.reset_seeds(args)
+    model_experiment(args, data, n=args.runs)
 
     # args.ablation = True
     # Since we only need binary classification size for the last layer
@@ -113,12 +93,12 @@ def model_experiments(args, data):
     # Everything else is same as default binary classification
     # model_experiment(args, data, n=5)
 
-    # args = optimal_args(args, binary=False)
+    # args = config.optimal_model(args, binary=False)
     # model_experiment(args, data, n=10)
 
 
-
 depths = [16, 32, 64, 128]
+
 
 def depth1_tuning(args, data):
     run_vals = []
@@ -128,6 +108,7 @@ def depth1_tuning(args, data):
         run_vals.append(test)
     return run_vals
 
+
 def depth2_tuning(args, data):
     run_vals = []
     for var in depths:
@@ -135,6 +116,7 @@ def depth2_tuning(args, data):
         val, test = train.cross_val(args, data, None)
         run_vals.append(test)
     return run_vals
+
 
 def depth3_tuning(args, data):
     run_vals = []
@@ -147,6 +129,7 @@ def depth3_tuning(args, data):
 
 filters = [3, 5, 7]
 
+
 def filter0_tuning(args, data):
     run_vals = []
     for var in depths:
@@ -154,6 +137,7 @@ def filter0_tuning(args, data):
         val, test = train.cross_val(args, data, None)
         run_vals.append(test)
     return run_vals
+
 
 def filter1_tuning(args, data):
     run_vals = []
@@ -163,6 +147,7 @@ def filter1_tuning(args, data):
         run_vals.append(test)
     return run_vals
 
+
 def filter2_tuning(args, data):
     run_vals = []
     for var in depths:
@@ -171,7 +156,9 @@ def filter2_tuning(args, data):
         run_vals.append(test)
     return run_vals
 
+
 poolings = [3, 4, 5]
+
 
 def pooling0_tuning(args, data):
     run_vals = []
@@ -181,6 +168,7 @@ def pooling0_tuning(args, data):
         run_vals.append(test)
     return run_vals
 
+
 def pooling1_tuning(args, data):
     run_vals = []
     for var in poolings:
@@ -188,6 +176,7 @@ def pooling1_tuning(args, data):
         val, test = train.cross_val(args, data, None)
         run_vals.append(test)
     return run_vals
+
 
 def pooling2_tuning(args, data):
     run_vals = []
@@ -199,6 +188,7 @@ def pooling2_tuning(args, data):
 
 
 hiddens = [16, 32, 64, 128]
+
 
 def lhidden1_tuning(args, data):
     run_vals = []
@@ -217,47 +207,48 @@ def lhidden2_tuning(args, data):
         run_vals.append(test)
     return run_vals
 
+
 def different_parameters_experiments(args, data):
-    # args = optimal_args(args, binary=True)
-    # tuning_experiment(args, data, lhidden1_tuning)
-    # args = optimal_args(args, binary=True)
-    # tuning_experiment(args, data, lhidden2_tuning)
+    # args = config.optimal_model(args, binary=True)
+    # tuning_experiment(args, data, lhidden1_tuning, n=args.runs)
+    # args = config.optimal_model(args, binary=True)
+    # tuning_experiment(args, data, lhidden2_tuning, n=args.runs)
     #
-    # args = optimal_args(args, binary=True)
-    # tuning_experiment(args, data, depth1_tuning)
-    # args = optimal_args(args, binary=True)
-    # tuning_experiment(args, data, depth2_tuning)
-    # args = optimal_args(args, binary=True)
-    # tuning_experiment(args, data, depth3_tuning)
+    # args = config.optimal_model(args, binary=True)
+    # tuning_experiment(args, data, depth1_tuning, n=args.runs)
+    # args = config.optimal_model(args, binary=True)
+    # tuning_experiment(args, data, depth2_tuning, n=args.runs)
+    # args = config.optimal_model(args, binary=True)
+    # tuning_experiment(args, data, depth3_tuning, n=args.runs)
 
-    args = optimal_args(args, binary=True)
-    tuning_experiment(args, data, filter0_tuning)
-    args = optimal_args(args, binary=True)
-    tuning_experiment(args, data, filter1_tuning)
-    args = optimal_args(args, binary=True)
-    tuning_experiment(args, data, filter2_tuning)
+    args = config.optimal_model(args, binary=True)
+    tuning_experiment(args, data, filter0_tuning, n=args.runs)
+    args = config.optimal_model(args, binary=True)
+    tuning_experiment(args, data, filter1_tuning, n=args.runs)
+    args = config.optimal_model(args, binary=True)
+    tuning_experiment(args, data, filter2_tuning, n=args.runs)
 
-    args = optimal_args(args, binary=True)
-    tuning_experiment(args, data, pooling0_tuning)
-    args = optimal_args(args, binary=True)
-    tuning_experiment(args, data, pooling1_tuning)
-    args = optimal_args(args, binary=True)
-    tuning_experiment(args, data, pooling2_tuning)
+    args = config.optimal_model(args, binary=True)
+    tuning_experiment(args, data, pooling0_tuning, n=args.runs)
+    args = config.optimal_model(args, binary=True)
+    tuning_experiment(args, data, pooling1_tuning, n=args.runs)
+    args = config.optimal_model(args, binary=True)
+    tuning_experiment(args, data, pooling2_tuning, n=args.runs)
 
 
 def tuning_experiments(args, data):
-    args = optimal_args(args, binary=True)
+    args = config.optimal_model(args, binary=True)
     tuning_experiment(args, data, lr_tuning)
-    args = optimal_args(args, binary=True)
+    args = config.optimal_model(args, binary=True)
     tuning_experiment(args, data, p_tuning)
 
 
 def draw_embeddings_tsne(args, data):
-    args = optimal_args(args, binary=True)
+    args = config.optimal_model(args, binary=True)
     args.draw = True
     model_experiment(args, data, n=1, save=False)
 
-    args = optimal_args(args, binary=False)
+    args = config.optimal_model(args, binary=False)
     args.draw = True
     model_experiment(args, data, n=1, save=False)
 
@@ -390,23 +381,13 @@ def plot_tuning_experiments():
     plt.show()
 
 
-def set_randoms(args):
-    random.seed(args.rand_seed)
-    np.random.seed(args.np_seed)
-    torch.manual_seed(args.torch_seed)
-
-
-
 def main():
-    args = util.arg_parse()
-
+    args = utils.arg_parse()
     data = Data(args, verbose=False)
     reporter = Reporter()
     start = time.time()
-    # args = optimal_args(model_args, binary=True)
     # model_experiment(args, data, n=1)
     # model_experiments(model_args, data)
-    # different_parameters_experiments(model_args, data)
     # plot_ablation_comparison()
     # plot_algorithm_comparisons(False)
     # plot_algorithm_comparisons(True)
@@ -416,10 +397,14 @@ def main():
     #
     # draw_embeddings_tsne(model_args, data)
 
+    if args.experiment == "tuning":
+        different_parameters_experiments(args, data)
     if args.experiment == "single":
         train.single_run(args, data, reporter)
     if args.experiment == "train":
         train.dataset_search(args, data, reporter)
+    if args.experiment == "model_experiments":
+        model_experiments(args, data)
     if args.experiment == "svm":
         svm_experiments(args, data, opt_args=True)
     if args.experiment == "lstm":
