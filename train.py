@@ -109,9 +109,15 @@ def dataset_search(args, data, reporter):
     hidden = [8, 16, 32, 64]  # 5
     normalizations = [Normalizer.scale, Normalizer.z_score]  # 2
     batch_sizes = [128, 256, 512, None]  # 3
+    args.kernel_size = [7, 7, 5]
+    args.pooling_size = 4
+    args.ablation = False
+    args.rand_seed = 42
+    args.np_seed = 42
+    args.torch_seed = 42
     
-    print(f"Searching through {args.n_random_search} items")
-    for _ in range(args.n_random_search):
+    print(f"Searching through {args.n_search} items")
+    for _ in range(args.n_search):
         split = [0] * 2
         split[0] = random.choice(bcq)
         split[1] = random.choice(mx)
@@ -125,8 +131,8 @@ def dataset_search(args, data, reporter):
             args.train_n = None
 
         # According to the conventions, the number of convolutions should decrease in each step.
-        [args.ch_conv1, args.ch_conv3, args.ch_conv3] = sorted([random.choice(convs) for _ in range(3)])
-        [args.l_hidden2, args.l_hidden1] = sorted([random.choice(hidden) for _ in range(2)])
+        [args.ch_conv1, args.ch_conv2, args.ch_conv3] = sorted([random.choice(convs) for _ in range(3)])
+        [args.l_hidden1, args.l_hidden2] = sorted([random.choice(hidden) for _ in range(2)])
         
         args.nan_mode = random.choice(nan_modes)
         args.data_dropout = random.choice(dropouts)
@@ -193,7 +199,7 @@ def single_serach(args, data, reporter):
     nan_modes = [0]  # 3
     normalizations = [Normalizer.scale, Normalizer.z_score]
 
-    print(f"Searching through {args.n_random_search} items")
+    print(f"Searching through {args.n_search} items")
     for _ in range(5):
         split = [0] * 2
         split[0] = random.choice(bcq)
@@ -230,7 +236,7 @@ def main():
     start = time.time()
     # single_serach(prog_args, data, reporter)
     single_run(prog_args, data, reporter)
-    # dataset_search(prog_args, data=data, reporter=reporter)
+    dataset_search(prog_args, data=data, reporter=reporter)
     run_time = int(time.time() - start)
     print(f"It took {run_time // 60:02d}:{run_time % 60:02d} to run program")
 

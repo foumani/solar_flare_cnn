@@ -3,86 +3,37 @@ import os
 from collections import namedtuple
 
 import numpy as np
-import torch
 from sklearn.metrics import confusion_matrix
 
 DataPair = namedtuple("DataPair", ["X", "y"])
 
 
-def train_arg_parse(manual=None):
+def arg_parse(manual=None):
     parser = common_arg_parse(manual)
-    parser.add_argument("--learning_rate", dest="lr",
-                        default=0.01,
-                        type=float,
+    parser.add_argument("--learning_rate", dest="lr", default=0.01, type=float,
                         help="Adam optimizer learning rate.")
     parser.add_argument("--early_stop", dest="early_stop", type=int,
                         default=100)
     parser.add_argument("--stop", dest="stop", default=1000, type=int)
-    parser.add_argument("--random_search", dest="n_random_search",
-                        type=int,
+    parser.add_argument("--search", dest="n_search", type=int,
                         default=100)
     parser.add_argument("--batch", dest="batch_size", default=256, type=int)
     parser.add_argument("--draw", dest="draw",
                         action="store_true",
                         help="Draw the t-SNE of the last layer of model.")
-    parser.add_argument("--ablation", dest="ablation",
-                        action="store_true",
-                        help="Seeing the effect of removing the FCN.")
-    parser.add_argument("--val_p", dest="val_p",
-                        default=0.4,
-                        required=False,
+    parser.add_argument("--valp", dest="val_p", default=0.4, required=False,
                         type=float,
-                        help="Portion of data dedicated to validation set.")
+                        help="Portion of data dedicated to validation.")
     parser.add_argument("--gpu", nargs="?", const=0, type=int,
                         help="Run on GPU. Optionally specify GPU id (default: 0 if flag is provided without a value).")
-    args = parser.parse_args()
-    if args.train_n is not None:
-        args.train_n = [int(a) for a in args.train_n.split(",")]
-    if args.train_k is not None:
-        args.train_k = [int(a) for a in args.train_k.split(",")]
-
-    if not os.path.exists(args.log_dir):
-        os.makedirs(args.log_dir)
-    if not os.path.exists("./experiments_plot"):
-        os.makedirs("./experiments_plot")
-    if not os.path.exists("./plots"):
-        os.makedirs("./plots")
-
-    # args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
-    # args.model_report_filename = f"model_report_{'binary' if args.binary else 'multi'}.csv"
-
-    args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
-    args.model_report_filename = f"seeded_best_model_report_{'binary' if args.binary else 'multi'}.csv"
-
-    initialize(args)
-    return args
-
-
-def baseline_arg_parse():
-    parser = common_arg_parse()
-    parser.add_argument("--val_p", dest="val_p", default=None, type=float,
-                        help="Proportion of validation instances from training "
-                             "set. It is mutually exclusive with valpart.")
-    parser.add_argument("--method", dest="method", required=False,
-                        help="Running what baseline. Possible choices are 'svm', 'minirocket', 'cif', 'cnn', and 'lstm'.")
-    return parser.parse_args()
-
-
-def common_arg_parse(manual=None):
-    parser = argparse.ArgumentParser(description="Solar prediction arguments.")
     parser.add_argument('--multi', dest='binary',
                         action="store_false",
-                        help='Whether train for binary or multi classification.')
-    parser.add_argument('--runs', dest='run_times', default=1, type=int,
+                        help='Runs multi-class classification. (not supported)')
+    parser.add_argument('--runs', dest='runs', default=1, type=int,
                         help='How many times a model runs.')
-    parser.add_argument('--paramsearch', dest="n_param_search", type=int,
-                        required=False,
-                        help="How many random values searched.")
-    parser.add_argument("--datadir",
-                        dest="data_dir",
-                        required=manual is None,
+    parser.add_argument("--datadir", dest="data_dir", required=True,
                         help="Location of data directory.")
-    parser.add_argument("--logdir", dest="log_dir", required=manual is None,
+    parser.add_argument("--logdir", dest="log_dir", required=True,
                         help="Location of log directory.")
     parser.add_argument("--files_csv", dest="files_df_filename",
                         default="all_files.csv",
@@ -92,7 +43,7 @@ def common_arg_parse(manual=None):
                         help="Name of the numpy file with all instances.")
     parser.add_argument("--n", dest="train_n", default=None,
                         help="Distribution of values for train set as "
-                             "size for each class. "
+                             "proportion for each class. "
                              "Input each value for classes seperated by ','. "
                              "Example: 400,300,200,100 ."
                              "Mutually exclusive with 'k'.")
@@ -106,16 +57,45 @@ def common_arg_parse(manual=None):
                         help="Partition of SWAN-SF set as validation. "
                              "It is mutually exclusive with valp.")
     parser.add_argument("--cache", dest="cache", action="store_true")
+
+    parser.add_argument("--experiment", dest="experiment", required=False,
+                        help="Possible choices are 'svm', 'minirocket', 'cif', 'cnn', and 'lstm'.")
+    args = parser.parse_args()
+
+    initialize(args)
+    return args
+
+
+def common_arg_parse(manual=None):
+    parser = argparse.ArgumentParser(description="Solar prediction arguments.")
     if manual is not None:
         parser.data_dir = manual["data_dir"]
         parser.log_dir = manual["log_dir"]
     return parser
+
 
 def initialize(args):
     if args.gpu is None:
         args.device = "cpu"
     else:
         args.device = f"cuda:{args.gpu}"
+
+    if not os.path.exists(args.log_dir):
+        os.makedirs(args.log_dir)
+    if not os.path.exists("./experiments_plot"):
+        os.makedirs("./experiments_plot")
+    if not os.path.exists("./plots"):
+        os.makedirs("./plots")
+
+    if args.train_n is not None:
+        args.train_n = [int(a) for a in args.train_n.split(",")]
+    if args.train_k is not None:
+        args.train_k = [int(a) for a in args.train_k.split(",")]
+
+    args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
+    args.model_report_filename = f"seeded_best_model_report_{'binary' if args.binary else 'multi'}.csv"
+    args.poster = None
+
 
 def print_config(args):
     print(f"cpu count: {os.cpu_count()}")
@@ -126,7 +106,6 @@ def print_config(args):
     print(f"val p: {args.val_p}")
     print(f"early stop: {args.early_stop}")
     print(f"caching: {args.cache}")
-
 
 
 def hash_dataset(partitions, k, n, nan_mode, binary):

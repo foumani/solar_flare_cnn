@@ -113,7 +113,7 @@ def multi_run(args, data, method, report=True):
         reporter = BaselineReporter()
     else:
         reporter = None
-    for i in range(args.run_times):
+    for i in range(args.runs):
         args.run_no = i
         test_metric = cross_val(args, data, reporter, method)
         reporter.model_row(args, test_metric)
@@ -139,7 +139,7 @@ def randomized_search(args, data, method):
     normalizations = [Normalizer.scale, Normalizer.z_score]
     grid = list(itertools.product(training_modes, dataset_grid, nan_modes,
                                   normalizations))
-    randomized = random.sample(grid, k=args.n_param_search)
+    randomized = random.sample(grid, k=args.n_search)
     print(f"Searching through {len(randomized)} items")
     for training_mode, split, nan_mode, normalization in randomized:
         print()
@@ -161,21 +161,21 @@ def randomized_search(args, data, method):
 
 def main():
     start = time.time()
-    prog_args = util.baseline_arg_parse()
-    data = Data(prog_args)
+    args = util.arg_parse()
+    data = Data(args)
     method = None
-    if prog_args.method == "svm":
+    if args.method == "svm":
         method = baseline_svm
-    elif prog_args.method == "minirocket":
+    elif args.method == "minirocket":
         method = baseline_minirocket
-    elif prog_args.method == "lstm":
+    elif args.method == "lstm":
         method = baseline_lstmfcn
-    elif prog_args.method == "cif":
+    elif args.method == "cif":
         method = baseline_cif
-    elif prog_args.method == "cnn":
+    elif args.method == "cnn":
         method = baseline_cnn
     print(method.__name__)
-    randomized_search(prog_args, data, method)
+    randomized_search(args, data, method)
     print(f"{(time.time() - start) * 1000:.1f} ms")
 
 

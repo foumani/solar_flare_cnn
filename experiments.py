@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import baselines
+import config
 import train
 import util
 from data import Data
@@ -9,11 +10,12 @@ from reporter import Reporter
 from util import Metric
 import random
 import torch
+import time
 
 
 def run_experiment(args, data, method):
     run_vals = []
-    for _ in range(5):
+    for _ in range(args.runs):
         test = baselines.cross_val(args, data, None, method)
         run_vals.append(test)
 
@@ -44,162 +46,57 @@ def model_experiment(args, data, n=1, save=True, seeds=[42, 42, 42]):
 
 def svm_experiments(args, data, opt_args, seeds=[3764, 7078]):
     if opt_args:
-        args.train_n = None
-        args.train_k = [3200, 1200]
-        args.nan_mode = "avg"
-        args.normalization_mode = "z_score"
+        args = config.optimal_svm(args, True)
     else:
-        args = update_to_model_opt(args)
-    args.binary = True
+        args = config.optimal_model(args, True)
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_svm)
 
-    # args.train_n = [800, 300, 200, 160]
-    # args.train_k = None
-    # args.nan_mode = 0
-    # args.normalization_mode = "z_score"
-    # args.binary = False
-    # run_experiment(args, data, baselines.baseline_svm)
-
 
 def minirocket_experiments(args, data, opt_args, seeds=[3764, 7078]):
     if opt_args:
-        args.train_n = [400, 200]
-        args.train_k = None
-        args.nan_mode = 0
-        args.normalization_mode = "scale"
+        config.optimal_minirocket(args, True)
     else:
-        args = update_to_model_opt(args)
-    args.binary = True
+        args = config.optimal_model(args, True)
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_minirocket)
 
-    # args.train_n = None
-    # args.train_k = [400, 300, 200, 40]
-    # args.nan_mode = 0
-    # args.normalization_mode = "z_score"
-    # args.binary = False
-    # run_experiment(args, data, baselines.baseline_minirocket)
-
 
 def lstm_experiments(args, data, opt_args, seeds=[3764, 7078]):
     if opt_args:
-        args.train_n = None
-        args.train_k = [1200, 400]
-        args.nan_mode = None
-        args.normalization_mode = "scale"
+        config.optimal_lstm(args, True)
     else:
-        args = update_to_model_opt(args)
-    args.binary = True
+        args = config.optimal_model(args, True)
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_lstmfcn)
 
-    # args.train_n = [1600, 900, 200, 160]
-    # args.train_k = None
-    # args.nan_mode = 0
-    # args.normalization_mode = "z_score"
-    # args.binary = False
-    # run_experiment(args, data, baselines.baseline_lstmfcn)
-
 
 def cif_experiments(args, data, opt_args, seeds=[3764, 7078]):
     if opt_args:
-        args.train_n = [2000, 1400]
-        args.train_k = None
-        args.nan_mode = 0
-        args.normalization_mode = "z_score"
+        config.optimal_cif(args, True)
     else:
-        args = update_to_model_opt(args)
-    args.binary = True
+        args = config.optimal_model(args, True)
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_cif)
 
-    # args.train_n = [400, 300, 200, 160]
-    # args.train_k = None
-    # args.nan_mode = None
-    # args.normalization_mode = "z_score"
-    # args.binary = False
-    # run_experiment(args, data, baselines.baseline_cif)
-
 
 def cnn_experiments(args, data, opt_args, seeds=[3764, 7078]):
     if opt_args:
-        args.train_n = None
-        args.train_k = [1600, 400]
-        args.nan_mode = 0
-        args.normalization_mode = "scale"
+        config.optimal_cnn(args, True)
     else:
-        args = update_to_model_opt(args)
-    args.binary = True
+        args = config.optimal_model(args, True)
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_cnn)
 
-    # args.train_n = [400, 900, 600, 160]
-    # args.train_k = None
-    # args.nan_mode = "avg"
-    # args.normalization_mode = "scale"
-    # args.binary = False
-    # run_experiment(args, data, baselines.baseline_cnn)
-
 
 def optimal_args(args, binary):
-    if binary:
-        args.train_n = [5000, 3500]  # [2250, 1600] # [1400, 1000]
-        args.ch_conv1 = 32  # 32
-        args.ch_conv2 = 64  # 64
-        args.ch_conv3 = 128  # 128
-        args.l_hidden1 = 64  # 64
-        args.l_hidden2 = 32  # 32
-        args.nan_mode = 0
-        args.batch_size = 1024  # 1024
-        args.normalization_mode = "scale"
-        args.data_dropout = 0.3
-        args.layer_dropout = 0.3  # 0.3
-        args.class_importance = [0.4, 0.6]  # [0.4, 0.6]
-        args.val_p = 0.8  # 0.3 # 0.6
-        args.run_no = 5
-        args.cache = True
-        args.kernel_size = [7, 7, 5]
-        args.pooling_size = [4, 4, 4]
-        args.rand_seed = 42
-        args.np_seed = 42
-        args.torch_seed = 42
-        # args.rand_seed = 3764
-        # args.np_seed = 7078
-        # args.torch_seeds = [1046, 35030, 92020, 16679, 22678]
-    else:
-        args.batch_size = 256
-        args.train_n = [2000, 2000, 400, 120]
-        args.ch_conv1 = 64
-        args.ch_conv2 = 32
-        args.ch_conv3 = 0
-        args.l_hidden = 32
-        args.nan_mode = "avg"
-        args.normalization_mode = "scale"
-        args.class_importance = [1, 1, 5, 15]
-        args.lr = 0.01
-        args.data_dropout = 0.2
-        args.layer_dropout = 0.4
-        args.val_p = 0.5
-        args.binary = False
+    return config.optimal_model(args, binary)
 
-    args.draw = False
-    args.ablation = False
-    set_randoms(args)
-    return args
-
-
-def update_to_model_opt(args):
-    args.train_k = None
-    args.train_n = [1400, 1000]
-    args.nan_mode = 0
-    args.normalization_mode = "scale"
-    return args
 
 
 def model_experiments(args, data):
@@ -207,7 +104,7 @@ def model_experiments(args, data):
     random.seed(args.rand_seed)
     np.random.seed(args.np_seed)
     torch.manual_seed(args.torch_seed)
-    model_experiment(args, data, n=10,
+    model_experiment(args, data, n=args.runs,
                      seeds=[args.rand_seed, args.np_seed, args.torch_seed])
 
     # args.ablation = True
@@ -499,25 +396,18 @@ def set_randoms(args):
     torch.manual_seed(args.torch_seed)
 
 
+
 def main():
-    model_args = util.train_arg_parse()
-    util.print_config(model_args)
+    args = util.arg_parse()
 
-    baseline_args = util.baseline_arg_parse()
-
-    # data = Data(baseline_args, verbose=False)
-    # baseline_args.poster = "same_seed"
-
+    data = Data(args, verbose=False)
+    reporter = Reporter()
+    start = time.time()
     # args = optimal_args(model_args, binary=True)
     # model_experiment(args, data, n=1)
     # model_experiments(model_args, data)
     # different_parameters_experiments(model_args, data)
     # plot_ablation_comparison()
-    # svm_experiments(baseline_args, data, opt_args=False)
-    # lstm_experiments(baseline_args, data, opt_args=False)
-    # minirocket_experiments(baseline_args, data, opt_args=False)
-    # cnn_experiments(baseline_args, data, opt_args=False)
-    # cif_experiments(baseline_args, data, opt_args=False)
     # plot_algorithm_comparisons(False)
     # plot_algorithm_comparisons(True)
     #
@@ -525,6 +415,21 @@ def main():
     # plot_tuning_experiments()
     #
     # draw_embeddings_tsne(model_args, data)
+
+    if args.experiment == "single":
+        train.single_run(args, data, reporter)
+    if args.experiment == "train":
+        train.dataset_search(args, data, reporter)
+    if args.experiment == "svm":
+        svm_experiments(args, data, opt_args=True)
+    if args.experiment == "lstm":
+        lstm_experiments(args, data, reporter)
+    if args.experiment == "minirocket":
+        minirocket_experiments(args, data, reporter)
+    if args.experiment == "cnn":
+        cnn_experiments(args, data, reporter)
+    if args.experiment == "cif":
+        cif_experiments(args, data, reporter)
 
 
 if __name__ == "__main__":

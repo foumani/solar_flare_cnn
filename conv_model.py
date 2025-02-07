@@ -21,13 +21,13 @@ class ConvModel(nn.Module):
                                out_channels=self.conv1_channels,
                                kernel_size=args.kernel_size[0],
                                bias=True)  # [ n_batch x conv1_ch x 54 ]
-        self.pool1 = nn.MaxPool1d(kernel_size=args.pooling_size[0],
+        self.pool1 = nn.MaxPool1d(kernel_size=args.pooling_size,
                                   stride=2)  # [ n_batch x conv1_ch x 24 ]
         self.conv2 = nn.Conv1d(in_channels=self.conv1_channels,
                                out_channels=self.conv2_channels,
                                kernel_size=args.kernel_size[1],
                                bias=True)  # [ n_batch x conv2_ch x 20 ]
-        self.pool2 = nn.MaxPool1d(kernel_size=args.pooling_size[2],
+        self.pool2 = nn.MaxPool1d(kernel_size=args.pooling_size,
                                   stride=2 if self.conv3_channels > 0 else 5)  # [ n_batch x conv2_ch x 8 or 4 ]
         
         self.conv_size = self.conv2_channels * 4
@@ -36,7 +36,7 @@ class ConvModel(nn.Module):
                                    out_channels=self.conv3_channels,
                                    kernel_size=args.kernel_size[2],
                                    bias=True)  # [ n_batch x conv3_ch x 4 ]
-            self.pool3 = nn.MaxPool1d(kernel_size=args.pooling_size[2],
+            self.pool3 = nn.MaxPool1d(kernel_size=args.pooling_size,
                                       stride=2)  # [ n_batch x conv3_ch x 1 ]
             self.conv_size = self.conv3_channels
         else:
