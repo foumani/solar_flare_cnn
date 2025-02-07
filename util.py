@@ -9,14 +9,14 @@ from sklearn.metrics import confusion_matrix
 DataPair = namedtuple("DataPair", ["X", "y"])
 
 
-def train_arg_parse():
-    parser = common_arg_parse()
+def train_arg_parse(manual=None):
+    parser = common_arg_parse(manual)
     parser.add_argument("--learning_rate", dest="lr",
                         default=0.01,
                         type=float,
                         help="Adam optimizer learning rate.")
     parser.add_argument("--early_stop", dest="early_stop", type=int,
-                        default=40)
+                        default=100)
     parser.add_argument("--stop", dest="stop", default=1000, type=int)
     parser.add_argument("--random_search", dest="n_random_search",
                         type=int,
@@ -52,8 +52,7 @@ def train_arg_parse():
     args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
     args.model_report_filename = f"seeded_best_model_report_{'binary' if args.binary else 'multi'}.csv"
     
-    args.device = torch.device(f"cuda:3" if torch.cuda.is_available()
-                               else "cpu")
+    args.device = torch.device(f"cuda:3" if torch.cuda.is_available() else "cpu")
     print(args.device)
     return args
 
@@ -68,7 +67,7 @@ def baseline_arg_parse():
     return parser.parse_args()
 
 
-def common_arg_parse():
+def common_arg_parse(manual=None):
     parser = argparse.ArgumentParser(description="Solar prediction arguments.")
     parser.add_argument('--multi', dest='binary',
                         action="store_false",
@@ -78,9 +77,11 @@ def common_arg_parse():
     parser.add_argument('--paramsearch', dest="n_param_search", type=int,
                         required=False,
                         help="How many random values searched.")
-    parser.add_argument("--datadir", dest="data_dir", required=True,
+    parser.add_argument("--datadir",
+                        dest="data_dir",
+                        required=manual is None,
                         help="Location of data directory.")
-    parser.add_argument("--logdir", dest="log_dir", required=True,
+    parser.add_argument("--logdir", dest="log_dir", required=manual is None,
                         help="Location of log directory.")
     parser.add_argument("--files_csv", dest="files_df_filename",
                         default="all_files.csv",
@@ -104,6 +105,9 @@ def common_arg_parse():
                         help="Partition of SWAN-SF set as validation. "
                              "It is mutually exclusive with valp.")
     parser.add_argument("--cache", dest="cache", action="store_true")
+    if manual is not None:
+        parser.data_dir = manual["data_dir"]
+        parser.log_dir = manual["log_dir"]
     return parser
 
 

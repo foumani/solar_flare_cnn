@@ -7,6 +7,8 @@ import util
 from data import Data
 from reporter import Reporter
 from util import Metric
+import random
+import torch
 
 
 def run_experiment(args, data, method):
@@ -14,7 +16,7 @@ def run_experiment(args, data, method):
     for _ in range(5):
         test = baselines.cross_val(args, data, None, method)
         run_vals.append(test)
-    
+
     print(f"method {method.__name__} runvals = {run_vals}, "
           f"avg: {np.average([val.tss for val in run_vals])}")
 
@@ -23,24 +25,24 @@ def run_experiment(args, data, method):
             np.array([run_val.cm for run_val in run_vals]))
 
 
-def model_experiment(args, data, n=1, save=True, seeds=[3764, 7078]):
+def model_experiment(args, data, n=1, save=True, seeds=[42, 42, 42]):
     run_vals = []
     for run_no in range(n):
         args.run_no = run_no
-        args.rand_seed = seeds[0]
-        args.np_seed = seeds[1]
-        if seeds[2] is not None:
-            args.torch_seed = seeds[2][run_no]
+        # args.rand_seed = 42
+        # args.np_seed = 42
+        # args.torch_seed = seeds[2]
+        # if seeds[2] is not None:
+        #     args.torch_seed = seeds[2][run_no]
         val, test = train.cross_val(args, data, Reporter())
         run_vals.append(test)
-    
+
     if save:
-        np.save(
-            f"./experiments_plot/train_{args.binary}_cm_{args.ablation}.npy",
-            np.array([run_val.cm for run_val in run_vals]))
+        np.save(f"./experiments_plot/train_{args.binary}_cm_{args.ablation}.npy",
+                np.array([run_val.cm for run_val in run_vals]))
+
 
 def svm_experiments(args, data, opt_args, seeds=[3764, 7078]):
-
     if opt_args:
         args.train_n = None
         args.train_k = [3200, 1200]
@@ -52,7 +54,7 @@ def svm_experiments(args, data, opt_args, seeds=[3764, 7078]):
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_svm)
-    
+
     # args.train_n = [800, 300, 200, 160]
     # args.train_k = None
     # args.nan_mode = 0
@@ -73,7 +75,7 @@ def minirocket_experiments(args, data, opt_args, seeds=[3764, 7078]):
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_minirocket)
-    
+
     # args.train_n = None
     # args.train_k = [400, 300, 200, 40]
     # args.nan_mode = 0
@@ -94,7 +96,7 @@ def lstm_experiments(args, data, opt_args, seeds=[3764, 7078]):
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_lstmfcn)
-    
+
     # args.train_n = [1600, 900, 200, 160]
     # args.train_k = None
     # args.nan_mode = 0
@@ -115,7 +117,7 @@ def cif_experiments(args, data, opt_args, seeds=[3764, 7078]):
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_cif)
-    
+
     # args.train_n = [400, 300, 200, 160]
     # args.train_k = None
     # args.nan_mode = None
@@ -136,7 +138,7 @@ def cnn_experiments(args, data, opt_args, seeds=[3764, 7078]):
     args.rand_seed = seeds[0]
     args.np_seed = seeds[1]
     run_experiment(args, data, baselines.baseline_cnn)
-    
+
     # args.train_n = [400, 900, 600, 160]
     # args.train_k = None
     # args.nan_mode = "avg"
@@ -147,24 +149,29 @@ def cnn_experiments(args, data, opt_args, seeds=[3764, 7078]):
 
 def optimal_args(args, binary):
     if binary:
-        args.train_n = [1400, 1000]
-        args.ch_conv1 = 32
-        args.ch_conv2 = 64
-        args.ch_conv3 = 128
-        args.l_hidden1 = 64
-        args.l_hidden2 = 32
+        args.train_n = [5000, 3500]  # [2250, 1600] # [1400, 1000]
+        args.ch_conv1 = 32  # 32
+        args.ch_conv2 = 64  # 64
+        args.ch_conv3 = 128  # 128
+        args.l_hidden1 = 64  # 64
+        args.l_hidden2 = 32  # 32
         args.nan_mode = 0
-        args.batch_size = 256
+        args.batch_size = 1024  # 1024
         args.normalization_mode = "scale"
         args.data_dropout = 0.3
-        args.layer_dropout = 0.1
-        args.class_importance = [0.5, 0.5]
-        args.val_p = 0.3
+        args.layer_dropout = 0.3  # 0.3
+        args.class_importance = [0.4, 0.6]  # [0.4, 0.6]
+        args.val_p = 0.8  # 0.3 # 0.6
         args.run_no = 5
         args.cache = True
-        args.rand_seed = 3764
-        args.np_seed = 7078
-        args.torch_seeds = [1046, 35030, 92020, 16679, 22678]
+        args.kernel_size = [7, 7, 5]
+        args.pooling_size = [4, 4, 4]
+        args.rand_seed = 42
+        args.np_seed = 42
+        args.torch_seed = 42
+        # args.rand_seed = 3764
+        # args.np_seed = 7078
+        # args.torch_seeds = [1046, 35030, 92020, 16679, 22678]
     else:
         args.batch_size = 256
         args.train_n = [2000, 2000, 400, 120]
@@ -180,10 +187,12 @@ def optimal_args(args, binary):
         args.layer_dropout = 0.4
         args.val_p = 0.5
         args.binary = False
-    
+
     args.draw = False
     args.ablation = False
+    set_randoms(args)
     return args
+
 
 def update_to_model_opt(args):
     args.train_k = None
@@ -195,30 +204,162 @@ def update_to_model_opt(args):
 
 def model_experiments(args, data):
     args = optimal_args(args, binary=True)
-    model_experiment(args, data, n=5, seeds=[args.rand_seed, args.np_seed, args.torch_seeds])
-    
+    random.seed(args.rand_seed)
+    np.random.seed(args.np_seed)
+    torch.manual_seed(args.torch_seed)
+    model_experiment(args, data, n=10,
+                     seeds=[args.rand_seed, args.np_seed, args.torch_seed])
+
     # args.ablation = True
     # Since we only need binary classification size for the last layer
     # args.ch_conv2 = 2
     # Everything else is same as default binary classification
     # model_experiment(args, data, n=5)
-    
+
     # args = optimal_args(args, binary=False)
     # model_experiment(args, data, n=10)
 
 
+
+depths = [16, 32, 64, 128]
+
+def depth1_tuning(args, data):
+    run_vals = []
+    for var in depths:
+        args.ch_conv1 = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+def depth2_tuning(args, data):
+    run_vals = []
+    for var in depths:
+        args.ch_conv2 = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+def depth3_tuning(args, data):
+    run_vals = []
+    for var in depths:
+        args.ch_conv3 = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+
+filters = [3, 5, 7]
+
+def filter0_tuning(args, data):
+    run_vals = []
+    for var in depths:
+        args.kernel_size[0] = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+def filter1_tuning(args, data):
+    run_vals = []
+    for var in depths:
+        args.kernel_size[1] = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+def filter2_tuning(args, data):
+    run_vals = []
+    for var in depths:
+        args.kernel_size[2] = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+poolings = [3, 4, 5]
+
+def pooling0_tuning(args, data):
+    run_vals = []
+    for var in poolings:
+        args.pooling_size[0] = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+def pooling1_tuning(args, data):
+    run_vals = []
+    for var in poolings:
+        args.pooling_size[1] = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+def pooling2_tuning(args, data):
+    run_vals = []
+    for var in poolings:
+        args.pooling_size[2] = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+
+hiddens = [16, 32, 64, 128]
+
+def lhidden1_tuning(args, data):
+    run_vals = []
+    for var in hiddens:
+        args.l_hidden1 = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+
+def lhidden2_tuning(args, data):
+    run_vals = []
+    for var in hiddens:
+        args.l_hidden2 = var
+        val, test = train.cross_val(args, data, None)
+        run_vals.append(test)
+    return run_vals
+
+def different_parameters_experiments(args, data):
+    # args = optimal_args(args, binary=True)
+    # tuning_experiment(args, data, lhidden1_tuning)
+    # args = optimal_args(args, binary=True)
+    # tuning_experiment(args, data, lhidden2_tuning)
+    #
+    # args = optimal_args(args, binary=True)
+    # tuning_experiment(args, data, depth1_tuning)
+    # args = optimal_args(args, binary=True)
+    # tuning_experiment(args, data, depth2_tuning)
+    # args = optimal_args(args, binary=True)
+    # tuning_experiment(args, data, depth3_tuning)
+
+    args = optimal_args(args, binary=True)
+    tuning_experiment(args, data, filter0_tuning)
+    args = optimal_args(args, binary=True)
+    tuning_experiment(args, data, filter1_tuning)
+    args = optimal_args(args, binary=True)
+    tuning_experiment(args, data, filter2_tuning)
+
+    args = optimal_args(args, binary=True)
+    tuning_experiment(args, data, pooling0_tuning)
+    args = optimal_args(args, binary=True)
+    tuning_experiment(args, data, pooling1_tuning)
+    args = optimal_args(args, binary=True)
+    tuning_experiment(args, data, pooling2_tuning)
+
+
 def tuning_experiments(args, data):
     args = optimal_args(args, binary=True)
-    tuning_experiment(args, data, p_tuning)
-    args = optimal_args(args, binary=True)
     tuning_experiment(args, data, lr_tuning)
+    args = optimal_args(args, binary=True)
+    tuning_experiment(args, data, p_tuning)
 
 
 def draw_embeddings_tsne(args, data):
     args = optimal_args(args, binary=True)
     args.draw = True
     model_experiment(args, data, n=1, save=False)
-    
+
     args = optimal_args(args, binary=False)
     args.draw = True
     model_experiment(args, data, n=1, save=False)
@@ -235,16 +376,16 @@ def p_tuning(args, data):
 
 def lr_tuning(args, data):
     run_vals = []
-    for i in [0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5]:
+    for i in [0.001, 0.01, 0.1]:
         args.lr = i
         val, test = train.cross_val(args, data, None)
         run_vals.append(test)
     return run_vals
 
 
-def tuning_experiment(args, data, method):
+def tuning_experiment(args, data, method, n=10):
     run_vals = []
-    for run in range(10):
+    for run in range(n):
         print(f"------- Running Experiment {run} of {method.__name__} -------")
         single_run_vals = method(args, data)
         run_vals.append(single_run_vals)
@@ -262,7 +403,7 @@ def plot_algorithm_comparisons(binary):
         f"./experiments_plot/baseline_minirocket_{binary}_cm.npy")
     svm = np.load(f"./experiments_plot/baseline_svm_{binary}_cm.npy")
     mine = np.load(f"./experiments_plot/train_{binary}_cm_False.npy")
-    
+
     cif = [Metric(binary=False, cm=cm) for cm in cif]
     cnn = [Metric(binary=False, cm=cm) for cm in cnn]
     lstmfcn = [Metric(binary=False, cm=cm) for cm in lstmfcn]
@@ -291,7 +432,7 @@ def plot_ablation_comparison():
     model = np.load("./experiments_plot/train_True_cm_False.npy")
     boxes = [[Metric(binary=True, cm=cm).tss for cm in ablation],
              [Metric(binary=True, cm=cm).tss for cm in model]]
-    
+
     fig = plt.figure()
     ax = fig.add_axes([0.15, 0.15, 0.7, 0.7])
     ax.set_xticklabels(["Model Without Feature Layer", "Full Model"])
@@ -310,13 +451,13 @@ def plot_tuning_experiments():
         for run_val in single_run_vals:
             single_run_val.append(Metric(binary=True, cm=run_val))
         run_vals.append(single_run_val)
-    
+
     y = []
     for single_run_vals in run_vals:
         y.append([m.tss for m in single_run_vals])
     y = np.array(y)
     y = np.average(y, axis=0)
-    
+
     fig = plt.figure(figsize=(8, 6))
     x_ticks = [round(0.1 * i + 0.1, 2) for i in range(9)]
     x = np.array(list(range(1, len(x_ticks) + 1))) * 0.1
@@ -326,7 +467,7 @@ def plot_tuning_experiments():
     plt.title("Effect of different portions of data as validation set")
     plt.savefig("plots/p_tuning_experiment.jpg")
     plt.show()
-    
+
     data = np.load("./experiments_plot/train_True_cm_lr_tuning.npy")
     run_vals = []
     for single_run_vals in data:
@@ -334,14 +475,14 @@ def plot_tuning_experiments():
         for run_val in single_run_vals:
             single_run_val.append(Metric(binary=True, cm=run_val))
         run_vals.append(single_run_val)
-        
+
     y = []
     for single_run_vals in run_vals:
         y.append([m.tss for m in single_run_vals])
     y = np.array(y)
     y = np.average(y, axis=0)
     y = y[1:]
-    
+
     x_ticks = ["0.001", "0.005", "0.01", "0.05", "0.1", "0.5"]
     plt.ylabel("TSS")
     plt.xlabel("Learning Rate")
@@ -352,21 +493,28 @@ def plot_tuning_experiments():
     plt.show()
 
 
+def set_randoms(args):
+    random.seed(args.rand_seed)
+    np.random.seed(args.np_seed)
+    torch.manual_seed(args.torch_seed)
+
+
 def main():
     baseline_args = util.baseline_arg_parse()
     model_args = util.train_arg_parse()
     data = Data(baseline_args, verbose=False)
     baseline_args.poster = "same_seed"
-    
+
     args = optimal_args(model_args, binary=True)
     # model_experiment(args, data, n=1)
-    # model_experiments(model_args, data)
+    model_experiments(model_args, data)
+    # different_parameters_experiments(model_args, data)
     # plot_ablation_comparison()
     # svm_experiments(baseline_args, data, opt_args=False)
     # lstm_experiments(baseline_args, data, opt_args=False)
-    minirocket_experiments(baseline_args, data, opt_args=False)
-    cnn_experiments(baseline_args, data, opt_args=False)
-    cif_experiments(baseline_args, data, opt_args=False)
+    # minirocket_experiments(baseline_args, data, opt_args=False)
+    # cnn_experiments(baseline_args, data, opt_args=False)
+    # cif_experiments(baseline_args, data, opt_args=False)
     # plot_algorithm_comparisons(False)
     # plot_algorithm_comparisons(True)
     #

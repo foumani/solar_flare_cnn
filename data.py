@@ -132,8 +132,8 @@ class Data:
     @staticmethod
     def dataholders(args, X_train_np, y_train_np, X_val_np, y_val_np,
                     X_test_np, y_test_np, test=False):
-        X_train = torch.tensor(X_train_np, dtype=torch.float32).to(args.device)
-        y_train = torch.tensor(y_train_np, dtype=torch.long).to(args.device)
+        X_train = torch.tensor(X_train_np, dtype=torch.float32, device=args.device)
+        y_train = torch.tensor(y_train_np, dtype=torch.long, device=args.device)
         if args.batch_size is None or args.batch_size == 0.0:
             train = [util.DataPair(X_train, y_train)]
         else:
@@ -144,12 +144,13 @@ class Data:
         if test:
             val = None
         else:
-            X_val = torch.tensor(X_val_np, dtype=torch.float32).to(args.device)
-            y_val = torch.tensor(y_val_np, dtype=torch.long).to(args.device)
+            X_val = torch.tensor(X_val_np, dtype=torch.float32, device=args.device)
+            y_val = torch.tensor(y_val_np, dtype=torch.long, device=args.device)
             val = [util.DataPair(X_val, y_val)]
         test_set_size = args.batch_size if args.batch_size is not None else 1024
         X_test = torch.split(torch.tensor(X_test_np, dtype=torch.float32), test_set_size)
         y_test = torch.split(torch.tensor(y_test_np, dtype=torch.long), test_set_size)
+
         test = [util.DataPair(X_test[i], y_test[i]) for i in range(len(X_test))]
         return train, val, test
 

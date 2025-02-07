@@ -38,7 +38,8 @@ def draw(args, emb, y, hash_name, binary):
 
 def train(args, data: Data, reporter: Reporter):
     train, val, test = data.dataholders(args, *data.numpy_datasets(args))
-    model = ConvModel(conv1_channels=args.ch_conv1,
+    model = ConvModel(args=args,
+                      conv1_channels=args.ch_conv1,
                       conv2_channels=args.ch_conv2,
                       conv3_channels=args.ch_conv3,
                       l_hidden1=args.l_hidden1,
@@ -76,9 +77,9 @@ def train(args, data: Data, reporter: Reporter):
 
 
 def cross_val(args, data, reporter):
-    random.seed(args.rand_seed)
-    np.random.seed(args.np_seed)
-    torch.manual_seed(args.torch_seed)
+    # random.seed(args.rand_seed)
+    # np.random.seed(args.np_seed)
+    # torch.manual_seed(args.torch_seed)
     all_val_metric = Metric(binary=args.binary)
     all_test_metric = Metric(binary=args.binary)
     for test_part in range(1, 6):
@@ -145,6 +146,8 @@ def single_run(args, data, reporter):
     args.ch_conv3 = 128
     args.l_hidden1 = 64
     args.l_hidden2 = 32
+    args.kernel_size = [7, 7, 5]
+    args.pooling_size = [4, 5, 4]
     args.nan_mode = 0
     args.batch_size = 256
     args.normalization_mode = Normalizer.scale
