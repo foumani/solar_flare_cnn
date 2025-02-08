@@ -9,6 +9,7 @@ from data import Data
 from reporter import Reporter
 from utils import Metric
 import time
+import warnings
 
 
 def run_experiment(args, data, method):
@@ -386,6 +387,7 @@ def main():
     data = Data(args, verbose=False)
     reporter = Reporter()
     start = time.time()
+    warnings.filterwarnings("ignore", category=UserWarning, module=r"torch\.nn\.modules\.lazy")
     # model_experiment(args, data, n=1)
     # model_experiments(model_args, data)
     # plot_ablation_comparison()
@@ -415,6 +417,8 @@ def main():
         cnn_experiments(args, data, reporter)
     if args.experiment == "cif":
         cif_experiments(args, data, reporter)
+
+    reporter.experiment.time(args, start, time.time())
 
 
 if __name__ == "__main__":

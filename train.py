@@ -58,12 +58,11 @@ def train(args, data: Data, reporter: Reporter):
                                                 lr=args.lr),
                      dataholder={"train": train,
                                  "val": val},
-                     reporter=reporter,
-                     verbose=True)
+                     reporter=reporter)
     algo.train(early_stop=args.early_stop)
     test_loss, test_metric = algo.test(test)
-    print(f"best val run: {algo.best_val_run_metric}")
-    print(f"test run    : {test_metric}")
+    reporter.cross.best_val(args, algo.best_val_run_metric)
+    reporter.cross.best_test(args, test_metric)
     if args.draw:
         draw(args,
              model.exp_last_layer(test[0].X).cpu().detach().numpy(),
@@ -77,9 +76,6 @@ def train(args, data: Data, reporter: Reporter):
 
 
 def cross_val(args, data, reporter):
-    # random.seed(args.rand_seed)
-    # np.random.seed(args.np_seed)
-    # torch.manual_seed(args.torch_seed)
     all_val_metric = Metric(binary=args.binary)
     all_test_metric = Metric(binary=args.binary)
     for test_part in range(1, 6):
@@ -92,7 +88,8 @@ def cross_val(args, data, reporter):
                            val_metric=all_val_metric,
                            test_metric=all_test_metric)
         reporter.save_model_report(args, incremental=True)
-    print(f"all test metric: {all_test_metric}")
+    reporter.run.val(args, all_val_metric)
+    reporter.run.test(args, all_test_metric)
     return all_val_metric, all_test_metric
 
 
@@ -115,8 +112,8 @@ def dataset_search(args, data, reporter):
     args.rand_seed = 42
     args.np_seed = 42
     args.torch_seed = 42
-    
-    print(f"Searching through {args.n_search} items")
+
+    reporter.experiment.header(args)
     for _ in range(args.n_search):
         split = [0] * 2
         split[0] = random.choice(bcq)
@@ -131,9 +128,11 @@ def dataset_search(args, data, reporter):
             args.train_n = None
 
         # According to the conventions, the number of convolutions should decrease in each step.
-        [args.ch_conv1, args.ch_conv2, args.ch_conv3] = sorted([random.choice(convs) for _ in range(3)])
-        [args.l_hidden1, args.l_hidden2] = sorted([random.choice(hidden) for _ in range(2)])
-        
+        [args.ch_conv1, args.ch_conv2, args.ch_conv3] = sorted(
+            [random.choice(convs) for _ in range(3)])
+        [args.l_hidden1, args.l_hidden2] = sorted(
+            [random.choice(hidden) for _ in range(2)])
+
         args.nan_mode = random.choice(nan_modes)
         args.data_dropout = random.choice(dropouts)
         args.layer_dropout = random.choice(dropouts)
@@ -142,6 +141,7 @@ def dataset_search(args, data, reporter):
         args.batch_size = random.choice(batch_sizes)
         args.val_p = 0.5
         args.run_no = 0  # Only run once for each parameter set.
+        reporter.config.print(args)
         cross_val(args, data, reporter)
 
 
@@ -172,6 +172,7 @@ def single_run(args, data, reporter):
         cross_val(args, data, reporter)
         args.rand_seed = random.randint(0, 10000)
         args.np_seed = random.randint(0, 10000)
+
 
 def single_serach(args, data, reporter):
     args.ch_conv1 = 32
@@ -219,26 +220,19 @@ def single_serach(args, data, reporter):
 
 
 def main():
-    numpy.set_printoptions(precision=2, formatter={'int': '{:5d}'.format,
+    np.set_printoptions(precision=2, formatter={'int': '{:5d}'.format,
                                                    'float': '{:7.2f}'.format})
     prog_args = utils.train_arg_parse()
     prog_args.cache = True
-    print(f"cpu count: {os.cpu_count()}")
-    print(f"device: {prog_args.device}")
-    print(f"data dir: {prog_args.data_dir}")
-    print(f"csv database: {prog_args.files_df_filename}")
-    print(f"mem instances: {prog_args.files_np_filename}")
-    print(f"val p: {prog_args.val_p}")
-    print(f"early stop: {prog_args.early_stop}")
-    print(f"caching: {prog_args.cache}")
+    utils.print_config(prog_args)
     reporter = Reporter()
     data = Data(prog_args)
     start = time.time()
     # single_serach(prog_args, data, reporter)
     single_run(prog_args, data, reporter)
     dataset_search(prog_args, data=data, reporter=reporter)
-    run_time = int(time.time() - start)
-    print(f"It took {run_time // 60:02d}:{run_time % 60:02d} to run program")
+
+    reporter.experiment.time(prog_args, start, time.time())
 
 
 if __name__ == "__main__":

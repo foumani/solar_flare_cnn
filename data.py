@@ -43,9 +43,6 @@ class Data:
     
     def numpy_datasets(self, args):
         train_parts = [i for i in range(1, 6) if i not in [args.test_part]]
-        print(f"Training {train_parts}, "
-              f"Val {args.val_p}, "
-              f"Test {args.test_part}")
         
         X_train_np, y_train_np = self.numpy_dataset(train_parts,
                                                     args.normalization_mode,
@@ -194,9 +191,7 @@ def create_files_numpy(data_dir, file_path, files_df):
     X = np.empty((n, 24, 60))
     for index, row in files_df.iterrows():
         file_path = row["path"]
-        df = pandas.read_csv(
-            os.path.join(data_dir, file_path), delimiter="\t"
-        )
+        df = pandas.read_csv(os.path.join(data_dir, file_path), delimiter="\t")
         df = df[df.columns[1:25]]
         X[index] = df.to_numpy().T
         pbar.update(1)
@@ -272,7 +267,7 @@ def read_instances(files_df, files_np, binary):
     i, n = 0, len(files_df)
     X, y = np.empty((n, 24, 60)), np.empty(n)
     
-    pbar = tqdm(total=n, unit="files", smoothing=0.01)
+    pbar = tqdm(total=n, unit="files", smoothing=0.01, disable=True)
     for index, row in files_df.iterrows():
         if binary:
             label = 0 if (row["label"] in ["Q", "B", "C"]) else 1

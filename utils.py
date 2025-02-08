@@ -9,63 +9,68 @@ from sklearn.metrics import confusion_matrix
 
 DataPair = namedtuple("DataPair", ["X", "y"])
 
+
 def reset_seeds(args):
-    random.seed(args.rand_seed)
-    np.random.seed(args.np_seed)
-    torch.manual_seed(args.torch_seed)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
 
 def arg_parse(manual=None):
     parser = common_arg_parse(manual)
     parser.add_argument("--learning_rate", dest="lr", default=0.01, type=float,
-                        help="Adam optimizer learning rate.")
+                        help="Learning rate for the Adam optimizer.")
     parser.add_argument("--early_stop", dest="early_stop", type=int,
-                        default=100)
-    parser.add_argument("--stop", dest="stop", default=1000, type=int)
-    parser.add_argument("--search", dest="n_search", type=int,
-                        default=100)
-    parser.add_argument("--batch", dest="batch_size", default=256, type=int)
-    parser.add_argument("--draw", dest="draw",
-                        action="store_true",
-                        help="Draw the t-SNE of the last layer of model.")
+                        default=100,
+                        help="Number of epochs with no improvement before stopping training early.")
+    parser.add_argument("--stop", dest="stop", default=1000, type=int,
+                        help="Maximum number of training iterations.")
+    parser.add_argument("--search", dest="n_search", type=int, default=100,
+                        help="Number of search iterations for hyperparameter tuning")
+    parser.add_argument("--batch", dest="batch_size", default=256, type=int,
+                        help="Batch size for training.")
+    parser.add_argument("--draw", dest="draw", action="store_true",
+                        help="Draw a t-SNE visualization of the model's last layer.")
     parser.add_argument("--valp", dest="val_p", default=0.4, required=False,
                         type=float,
-                        help="Portion of data dedicated to validation.")
+                        help="Fraction of data to dedicate to validation.")
     parser.add_argument("--gpu", nargs="?", const=0, type=int,
-                        help="Run on GPU. Optionally specify GPU id (default: 0 if flag is provided without a value).")
-    parser.add_argument('--multi', dest='binary',
-                        action="store_false",
-                        help='Runs multi-class classification. (not supported)')
+                        help="Run on GPU. Optionally specify GPU ID (default: 0 if the flag is provided without a value).")
+    parser.add_argument('--multi', dest='binary', action="store_false",
+                        help="Disable binary classification to run multi-class classification (currently not supported).")
     parser.add_argument('--runs', dest='runs', default=1, type=int,
-                        help='How many times a model runs.')
+                        help='Number of times to run the model (default: 1).')
     parser.add_argument("--datadir", dest="data_dir", required=True,
-                        help="Location of data directory.")
+                        help="Path to the data directory.")
     parser.add_argument("--logdir", dest="log_dir", required=True,
-                        help="Location of log directory.")
-    parser.add_argument("--files_csv", dest="files_df_filename",
-                        default="all_files.csv",
-                        help="Name of the csv database of instances.")
+                        help="Path to the log directory.")
+    parser.add_argument("--files_csv", dest="files_df_filename", default="all_files.csv",
+                        help="Filename for the CSV file containing instance metadata (default: 'all_files.csv').")
     parser.add_argument("--files_mem", dest="files_np_filename",
                         default="full_data_X_1_25.npy",
-                        help="Name of the numpy file with all instances.")
+                        help="Filename for the NumPy file with all instance data (default: 'full_data_X_1_25.npy').")
     parser.add_argument("--n", dest="train_n", default=None,
-                        help="Distribution of values for train set as "
-                             "proportion for each class. "
-                             "Input each value for classes seperated by ','. "
-                             "Example: 400,300,200,100 ."
-                             "Mutually exclusive with 'k'.")
+                        help="Comma-separated list specifying the distribution of training samples per class (e.g., 400,300,200,100). Mutually exclusive with '--k'.")
     parser.add_argument("--k", dest="train_k", default=None,
-                        help="Distribution of values for train set as "
-                             "proportion for each class. "
-                             "Input each value for classes seperated by ','. "
-                             "Example: 400,300,200,100 ."
-                             "Mutually exclusive with 'n'.")
+                        help="Comma-separated list specifying the distribution of training samples per class (e.g., 400,300,200,100). Mutually exclusive with '--n'.")
     parser.add_argument("--valpart", dest="val_part", default=None, type=int,
-                        help="Partition of SWAN-SF set as validation. "
-                             "It is mutually exclusive with valp.")
-    parser.add_argument("--cache", dest="cache", action="store_true")
-
+                        help="Partition index of the SWAN-SF dataset to use for validation."
+                             " Mutually exclusive with '--valp'.")
+    parser.add_argument("--cache", dest="cache", action="store_true",
+                        help="Enable caching of data for faster processing.")
     parser.add_argument("--experiment", dest="experiment", required=False,
-                        help="Possible choices are 'svm', 'minirocket', 'cif', 'cnn', and 'lstm'.")
+                        help="Type of experiment to run. "
+                             "Options: 'svm', 'minirocket', 'cif', 'cnn', 'lstm'.")
+    parser.add_argument("--verbose", dest="verbose", default=5, required=False, type=int,
+                        help="Verbosity level for output. Options are:\n"
+                             "  0: No output\n"
+                             "  1: No consul output\n"
+                             "  2: Minimal (only training start/end messages)\n"
+                             "  3: Per-run output\n"
+                             "  4: Data reading information\n"
+                             "  5: Detailed per-epoch output (default: 5)")
+    parser.add_argument("--seed", dest="seed", default=42, required=False, type=int,
+                        help="Random seed.")
     args = parser.parse_args()
 
     initialize(args)
