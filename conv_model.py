@@ -9,28 +9,32 @@ class ConvModel(nn.Module):
         super(ConvModel, self).__init__()
         self.args = args
         self.output_size = output_size
+        if args.pooling_strat == "max":
+            pooling = nn.MaxPool1d
+        else:
+            pooling = nn.AvgPool1d
         self.conv1 = nn.Conv1d(in_channels=24,
                                out_channels=self.args.depth[0],
                                kernel_size=args.kernel_size[0],
                                bias=True)  # [ n_batch x conv1_ch x time-series ]
-        self.pool1 = nn.MaxPool1d(kernel_size=args.pooling_size,
-                                  stride=2)  # [ n_batch x conv1_ch x time-series ]
+        self.pool1 = pooling(kernel_size=args.pooling_size,
+                             stride=2)  # [ n_batch x conv1_ch x time-series ]
         self.conv2 = nn.Conv1d(in_channels=self.args.depth[0],
                                out_channels=self.args.depth[1],
                                kernel_size=args.kernel_size[1],
                                bias=True)  # [ n_batch x conv2_ch x time-series ]
-        self.pool2 = nn.MaxPool1d(kernel_size=args.pooling_size,
-                                  stride=2)  # [ n_batch x conv2_ch x time-series ]
+        self.pool2 = pooling(kernel_size=args.pooling_size,
+                             stride=2)  # [ n_batch x conv2_ch x time-series ]
 
         if self.args.depth[2] > 0:
             self.conv3 = nn.Conv1d(in_channels=self.args.depth[1],
                                    out_channels=self.args.depth[2],
                                    kernel_size=args.kernel_size[2],
                                    bias=True)  # [ n_batch x conv3_ch x time-series ]
-            self.pool3 = nn.MaxPool1d(kernel_size=args.pooling_size,
-                                      stride=2)  # [ n_batch x conv3_ch x time-series ]
+            self.pool3 = pooling(kernel_size=args.pooling_size,
+                                 stride=2)  # [ n_batch x conv3_ch x time-series ]
         # else:
-        #     self.ablation_pool = nn.MaxPool1d(kernel_size=20,
+        #     self.ablation_pool = pooling(kernel_size=20,
         #                                       stride=20)  # [ n_batch x conv2_ch * 1 ]
 
         self.linear1 = nn.LazyLinear(out_features=self.args.hidden[0])

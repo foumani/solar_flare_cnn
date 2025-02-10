@@ -1,11 +1,14 @@
 import argparse
 import os
+import sys
 import random
 from collections import namedtuple
 
 import numpy as np
 import torch
 from sklearn.metrics import confusion_matrix
+
+from preprocess import Normalizer
 
 DataPair = namedtuple("DataPair", ["X", "y"])
 
@@ -20,9 +23,7 @@ def arg_parse(manual=None):
     parser = common_arg_parse(manual)
     parser.add_argument("--learning_rate", dest="lr", default=0.01, type=float,
                         help="Learning rate for the Adam optimizer.")
-    parser.add_argument("--early_stop", dest="early_stop", type=int,
-                        default=100,
-                        help="Number of epochs with no improvement before stopping training early.")
+    parser.add_argument("--earlystop", dest="early_stop", default=100, type=int)
     parser.add_argument("--stop", dest="stop", default=1000, type=int,
                         help="Maximum number of training iterations.")
     parser.add_argument("--search", dest="n_search", type=int, default=100,
@@ -34,6 +35,9 @@ def arg_parse(manual=None):
     parser.add_argument("--valp", dest="val_p", default=0.4, required=False,
                         type=float,
                         help="Fraction of data to dedicate to validation.")
+    parser.add_argument("--importance", dest="class_importance", default=None,
+                        required=False,
+                        help="Comma-seperated list specifying the importance of each class. (e.g., 0.4,0.6)")
     parser.add_argument("--gpu", nargs="?", const=0, type=int,
                         help="Run on GPU. Optionally specify GPU ID (default: 0 if the flag is provided without a value).")
     parser.add_argument('--multi', dest='binary', action="store_false",
@@ -69,8 +73,29 @@ def arg_parse(manual=None):
                              "  3: Per-run output\n"
                              "  4: Data reading information\n"
                              "  5: Detailed per-epoch output (default: 5)")
+    parser.add_argument("--depth", dest="depth", default=None, required=False,
+                        help="Comma-seperated list of length 3 specifying the depth of conv blocks (e.g., 5,7,9)")
+    # ------- model stuff ------------------
+    parser.add_argument("--hidden", dest="hidden", default=None, required=False,
+                        help="Comma-seperated list of length 2 specifying the hidden layer sizes (e.g., 32,16)")
+    parser.add_argument("--kernelsize", dest="kernel_size", default=None, required=False,
+                        help="Comma seperated list of length 3 specifying the kernel size of conv blocks (e.g., 7,7,5)")
+    parser.add_argument("--poolingsize",
+                        dest="pooling_size",
+                        default=None,
+                        required=False,
+                        type=int,
+                        help="Size of the pooling layer.")
+    parser.add_argument("--nan", dest="nan_mode", default=None, required=False,
+                        help="How to handle NAN numbers in data, if not given does nothing. options: 0, avg")
+    parser.add_argument("--norm", dest="normalization_mode", default=None, required=False,
+                        help="How to normalize the data. options: scale, zscore")
     parser.add_argument("--seed", dest="seed", default=42, required=False, type=int,
                         help="Random seed.")
+    parser.add_argument("--poolingstrat", dest="pooling_strat", default="max",
+                        required=False, help="pooling strategy. options: max, mean")
+    parser.add_argument("--datadrop", dest="data_dropout", default=0.0, type=float, required=False)
+    parser.add_argument("--layerdrop", dest="layer_dropout", default=0.0, type=float, required=False)
     args = parser.parse_args()
 
     initialize(args)
@@ -102,6 +127,34 @@ def initialize(args):
         args.train_n = [int(a) for a in args.train_n.split(",")]
     if args.train_k is not None:
         args.train_k = [int(a) for a in args.train_k.split(",")]
+    if args.depth is not None:
+        args.depth = [int(a) for a in args.depth.split(",")]
+        if len(args.depth) != 3:
+            sys.exit("Input 3 comma seperated numbers for depth. e.g. 8,16,32")
+    if args.hidden is not None:
+        args.hidden = [int(a) for a in args.hidden.split(",")]
+    if args.kernel_size is not None:
+        args.kernel_size = [int(a) for a in args.kernel_size.split(",")]
+        if len(args.kernel_size) != 3:
+            sys.exit("Input 3 comma seperated numbers for --kernelsize. e.g., 7,7,5")
+    if args.class_importance is not None:
+        args.class_importance = [float(a) for a in args.class_importance.split(",")]
+        # todo: add checks here
+    if args.nan_mode is not None:
+        if args.nan_mode == "0":
+            args.nan_mode = 0
+        elif args.nan_mode == "avg":
+            pass
+        else:
+            sys.exit("options for --nan: not given, 0, avg")
+    if args.normalization_mode is not None:
+        if args.normalization_mode == "scale":
+            args.normalization_mode = Normalizer.scale
+        elif args.normalization_mode == "zscore":
+            args.normalization_mode = Normalizer.z_score
+        else:
+            sys.exit("options for --norm: not given, scale, zscore")
+    args.ablation = False
 
     args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
     args.model_report_filename = f"seeded_best_model_report_{'binary' if args.binary else 'multi'}.csv"

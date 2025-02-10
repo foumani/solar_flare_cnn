@@ -75,9 +75,7 @@ def cross_val(args, data, reporter):
         all_val_metric += best_val_run_metric
         all_test_metric += test_metric
     if reporter is not None:
-        reporter.model_row(args,
-                           val_metric=all_val_metric,
-                           test_metric=all_test_metric)
+        reporter.model_row(args, val_metric=all_val_metric, test_metric=all_test_metric)
         reporter.save_model_report(args, incremental=True)
     reporter.run.val(args, all_val_metric)
     reporter.run.test(args, all_test_metric)
@@ -132,29 +130,22 @@ def dataset_search(args, data, reporter):
 
 
 def single_run(args, data, reporter):
-    args.train_n = [1400, 1000]
-    args.depth = [32, 64, 128]
-    args.hidden = [64, 32]
-    args.kernel_size = [7, 7, 5]
-    args.pooling_size = [4, 5, 4]
-    args.nan_mode = 0
-    args.batch_size = 256
-    args.normalization_mode = Normalizer.scale
-    args.data_dropout = 0.3
-    args.layer_dropout = 0.1
-    args.class_importance = [0.5, 0.5]
-    args.val_p = 0.3
-    args.run_no = 100
+    # args.kernel_size = [7, 7, 5]
+    # args.nan_mode = 0
+    # args.batch_size = 256
+    # args.normalization_mode = Normalizer.scale
+    # args.data_dropout = 0.3
+    # args.layer_dropout = 0.1
+    # args.class_importance = [0.5, 0.5]
+    # args.val_p = 0.3
+    # args.runs = 100
     args.cache = True
-    runs = args.run_no
-    args.rand_seed = 3764
-    args.np_seed = 7078
-    for i in range(runs):
-        args.torch_seed = random.randint(0, 100000)
+    # args.rand_seed = 3764
+    # args.np_seed = 7078
+    utils.reset_seeds(args)
+    for i in range(args.runs):
         args.run_no = i
         cross_val(args, data, reporter)
-        args.rand_seed = random.randint(0, 10000)
-        args.np_seed = random.randint(0, 10000)
 
 
 def single_serach(args, data, reporter):

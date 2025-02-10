@@ -147,9 +147,9 @@ class Reporter:
             args.nan_mode,
             args.class_importance,
             args.lr,
-            args.rand_seed,
-            args.np_seed,
-            args.torch_seed,
+            args.seed,
+            args.seed,
+            args.seed,
             val_metric,
             test_metric]
 

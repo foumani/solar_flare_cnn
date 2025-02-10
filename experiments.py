@@ -401,7 +401,7 @@ def main():
 
     if args.experiment == "tuning":
         different_parameters_experiments(args, data)
-    if args.experiment == "single":
+    if args.experiment == "model":
         train.single_run(args, data, reporter)
     if args.experiment == "train":
         train.dataset_search(args, data, reporter)

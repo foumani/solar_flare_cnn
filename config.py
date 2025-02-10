@@ -43,13 +43,12 @@ def optimal_model(args, binary=None):
         args.layer_dropout = 0.3  # 0.3
         args.class_importance = [0.4, 0.6]  # [0.4, 0.6]
         args.val_p = 0.8  # 0.3 # 0.6
-        args.run_no = 5
+        args.runs = 1
         args.cache = True
         args.kernel_size = [7, 7, 5]
         args.pooling_size = 4
-        args.rand_seed = 42
-        args.np_seed = 42
-        args.torch_seed = 42
+        args.pooling_strat = "max"
+        args.seed
     else:
         args.batch_size = 256
         args.train_n = [2000, 2000, 400, 120]
