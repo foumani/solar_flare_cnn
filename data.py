@@ -87,13 +87,13 @@ class Data:
             (X, y, norm_vals) = deepcopy(self.saved_datasets[hash_dataset])
             if train:
                 self.normalizer = preprocess.Normalizer(vals=norm_vals)
-        elif cache and n is None and k is None and os.path.exists(f"{dataset_loc}.npz"):
-            with np.load(f"{dataset_loc}.npz") as np_data:
-                X = np_data['X']
-                y = np_data['y']
-                norm_vals = np_data['norm_vals']
-            X, y = self.preprocess(X, y, normalization_mode, train)
-            self.saved_datasets[hash_dataset] = (X, y, norm_vals)
+        # elif cache and n is None and k is None and os.path.exists(f"{dataset_loc}.npz"):
+        #     with np.load(f"{dataset_loc}.npz") as np_data:
+        #         X = np_data['X']
+        #         y = np_data['y']
+        #         norm_vals = np_data['norm_vals']
+        #     X, y = self.preprocess(X, y, normalization_mode, train)
+        #     self.saved_datasets[hash_dataset] = (X, y, norm_vals)
         else:
             files_df = split(self.all_files_df, partitions=parts, k=k, n=n,
                              binary=binary)
@@ -101,8 +101,8 @@ class Data:
             X, y = preprocess.nan_to_num(X, y, nan_mode)
             self.normalizer.fit(X)
             norm_vals = self.normalizer.values()
-            if not cache and n is None and k is None:
-                np.savez(dataset_loc, X=X, y=y, norm_vals=norm_vals)
+            # if not cache and n is None and k is None:
+            #     np.savez(dataset_loc, X=X, y=y, norm_vals=norm_vals)
             X, y = self.preprocess(X, y, normalization_mode, train)
             if cache:
                 self.saved_datasets[hash_dataset] = (X, y, norm_vals)

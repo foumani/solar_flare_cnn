@@ -14,10 +14,11 @@ poolings = [[2, "mean"], [2, "max"],
             [3, "mean"], [3, "max"],
             [4, "mean"], [4, "max"]]
 
-hiddens = [[8, 8], [8, 16], [8, 32], [8, 64],
-           [16, 8], [16, 16], [16, 32], [16, 64],
-           [32, 8], [32, 16], [32, 32], [32, 64],
-           [64, 8], [64, 16], [64, 32], [64, 64]]
+hiddens = [[8, 8],
+           [16, 8], [16, 16],
+           [32, 8], [32, 16], [32, 32],
+           [64, 8], [64, 16], [64, 32], [64, 64],
+           [128, 8], [128, 16], [128, 32], [128, 64], [128, 128]]
 
 depths = [[2, 4, 6], [3, 6, 9], [4, 8, 12],
           [6, 12, 18], [8, 16, 24], [12, 24, 36],
@@ -43,12 +44,10 @@ def optimal_model(args, binary=None):
         args.layer_dropout = 0.3  # 0.3
         args.class_importance = [0.4, 0.6]  # [0.4, 0.6]
         args.val_p = 0.8  # 0.3 # 0.6
-        args.runs = 1
-        args.cache = True
         args.kernel_size = [7, 7, 5]
         args.pooling_size = 4
         args.pooling_strat = "max"
-        args.seed
+        args.seed = 42
     else:
         args.batch_size = 256
         args.train_n = [2000, 2000, 400, 120]

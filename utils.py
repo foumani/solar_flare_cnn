@@ -94,8 +94,17 @@ def arg_parse(manual=None):
                         help="Random seed.")
     parser.add_argument("--poolingstrat", dest="pooling_strat", default="max",
                         required=False, help="pooling strategy. options: max, mean")
-    parser.add_argument("--datadrop", dest="data_dropout", default=0.0, type=float, required=False)
-    parser.add_argument("--layerdrop", dest="layer_dropout", default=0.0, type=float, required=False)
+    parser.add_argument("--datadrop", dest="data_dropout", default=0.0, type=float,
+                        required=False)
+    parser.add_argument("--layerdrop", dest="layer_dropout", default=0.0, type=float,
+                        required=False)
+    # ------------------ saving stuff -------------------
+    parser.add_argument("--splitreport", dest="split_report_filename", default=None,
+                        required=False)
+    parser.add_argument("--modelreport", dest="model_report_filename", default=None,
+                        required=False)
+    parser.add_argument("--configreport", dest="config_report_filename",
+                        default="configs.csv", required=False)
     args = parser.parse_args()
 
     initialize(args)
@@ -156,8 +165,10 @@ def initialize(args):
             sys.exit("options for --norm: not given, scale, zscore")
     args.ablation = False
 
-    args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
-    args.model_report_filename = f"seeded_best_model_report_{'binary' if args.binary else 'multi'}.csv"
+    if args.split_report_filename is None:
+        args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"
+    if args.model_report_filename is None:
+        args.model_report_filename = f"seeded_best_model_report_{'binary' if args.binary else 'multi'}.csv"
     args.poster = None
 
 

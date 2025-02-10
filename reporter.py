@@ -2,6 +2,7 @@ import os
 from copy import copy
 
 import pandas as pd
+import numpy as np
 
 import utils
 
@@ -15,8 +16,7 @@ text_negative = "\33[7m"
 def save_report(loc, df, incremental):
     if incremental and os.path.exists(loc):
         pre_report_df = pd.read_csv(loc)
-        pd.concat([pre_report_df, df]).round(
-            decimals=4).to_csv(loc, index=False)
+        pd.concat([pre_report_df, df]).round(decimals=4).to_csv(loc, index=False)
         df.drop(df.index, inplace=True)
     else:
         df.round(decimals=4).to_csv(loc, index=False)
@@ -128,6 +128,11 @@ class Reporter:
                      "class_importance", "lr", "rand_seed", "np_seed", "torch_seed",
                      "all_best_val_runs",
                      "all_test_runs"])
+        self.config_report_df = pd.DataFrame(
+            columns=["id", "batch_size", "n", "depth", "hiddens", "dropout", "nan",
+                     "importance", "lr", "seed", "tss", "hss2", "acc", "prec", "rec",
+                     "f1"]
+        )
         self.experiment = Reporter.ExperimentReporter()
         self.config = Reporter.ConfigReporter()
         self.run = Reporter.RunReporter()
@@ -172,6 +177,31 @@ class Reporter:
             best_val_metric,
             test_metric]
 
+    def config_row(self, args, metrics):
+        def stats(metrics):
+            tss = [m.tss for m in metrics]
+            hss2 = [m.hss2 for m in metrics]
+            acc = [m.accuracy for m in metrics]
+            prec = [m.precision for m in metrics]
+            rec = [m.recall for m in metrics]
+            f1 = [m.f1 for m in metrics]
+
+            return ((np.average(tss).item(), np.std(tss).item()), (np.average(hss2).item(), np.std(hss2).item()),
+                    (np.average(acc).item(), np.std(acc).item()), (np.average(prec).item(), np.std(prec).item()),
+                    (np.average(rec).item(), np.std(rec).item()), (np.average(f1).item(), np.std(f1).item()))
+        tss, hss2, acc, prec, rec, f1 = stats(metrics)
+        self.config_report_df.loc[len(self.config_report_df.index)] = [
+            utils.hash_model(args),
+            args.batch_size, args.train_n, args.depth, args.hidden,
+            [args.data_dropout, args.layer_dropout], args.nan_mode, args.class_importance,
+            args.lr, args.seed, tss, hss2, acc, prec, rec, f1
+        ]
+
+    def save_config_report(self, args, incremental=False):
+        if args.verbose < 0: return
+        loc = os.path.join(args.log_dir, args.config_report_filename)
+        save_report(loc, self.config_report_df, incremental)
+
     def save_split_report(self, args, incremental=False):
         if args.verbose < 0: return
         loc = os.path.join(args.log_dir, args.split_report_filename)
@@ -206,12 +236,13 @@ class Reporter:
         def print(args):
             if args.verbose < 2: return
             strat = "def"
-            print(f"              Filter Size   Pool Size   Pool strat   Depth   Neurons\n"
-                  f"Conv Block 1: {args.kernel_size[0]}             {args.pooling_size}           {strat}          {args.depth[0]:3d}      -\n"
-                  f"Conv Block 2: {args.kernel_size[1]}             {args.pooling_size}           {strat}          {args.depth[1]:3d}      -\n"
-                  f"Conv Block 3: {args.kernel_size[2]}             {args.pooling_size}           {strat}          {args.depth[2]:3d}      -\n"
-                  f"FCN Layer  1: -             -           -            -       {args.hidden[0]:3d}\n"
-                  f"FCN Layer  1: -             -           -            -       {args.hidden[1]:3d}")
+            print(
+                f"              Filter Size   Pool Size   Pool strat   Depth   Neurons\n"
+                f"Conv Block 1: {args.kernel_size[0]}             {args.pooling_size}           {strat}          {args.depth[0]:3d}      -\n"
+                f"Conv Block 2: {args.kernel_size[1]}             {args.pooling_size}           {strat}          {args.depth[1]:3d}      -\n"
+                f"Conv Block 3: {args.kernel_size[2]}             {args.pooling_size}           {strat}          {args.depth[2]:3d}      -\n"
+                f"FCN Layer  1: -             -           -            -       {args.hidden[0]:3d}\n"
+                f"FCN Layer  1: -             -           -            -       {args.hidden[1]:3d}")
 
     class RunReporter:
         @staticmethod
@@ -228,7 +259,8 @@ class Reporter:
         @staticmethod
         def time(args, start, end, n):
             if args.verbose < 3: return
-            print(f"run no. {args.run_no}, test {args.test_part}:{n:5d}, duration {(end - start) * 1000:.1f} ms")
+            print(
+                f"run no. {args.run_no}, test {args.test_part}:{n:5d}, duration {(end - start) * 1000:.1f} ms")
 
         @staticmethod
         def test(args, loss, metric):

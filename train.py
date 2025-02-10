@@ -82,6 +82,44 @@ def cross_val(args, data, reporter):
     return all_val_metric, all_test_metric
 
 
+def config_run(args, data, reporter):
+    run_metrics = []
+    utils.reset_seeds(args)
+    for i in range(args.runs):
+        args.run_no = i
+        all_val_metric, all_test_metric = cross_val(args, data, reporter)
+        run_metrics.append(all_test_metric)
+    reporter.config_row(args, run_metrics)
+    reporter.save_config_report(args, incremental=True)
+
+def local_search(args, data, reporter):
+    for pooling in config.poolings:
+        config.optimal_model(args, binary=True)
+        args.pooling_size = pooling[0]
+        args.pooling_strat = pooling[1]
+        config_run(args, data, reporter)
+        break
+
+    for depth in config.depths:
+        config.optimal_model(args, binary=True)
+        args.depths = depth
+        config_run(args, data, reporter)
+        break
+
+    for hidden in config.hiddens:
+        config.optimal_model(args, binary=True)
+        args.hidden = hidden
+        config_run(args, data, reporter)
+        break
+
+    for filter_size in config.filter_sizes:
+        config.optimal_model(args, binary=True)
+        args.kernel_size = filter_size
+        config_run(args, data, reporter)
+        break
+
+
+
 def dataset_search(args, data, reporter):
     config.optimal_model(args, binary=True)
 
@@ -112,14 +150,9 @@ def dataset_search(args, data, reporter):
             args.train_k = split
             args.train_n = None
 
-        # According to the conventions, the number of convolutions should decrease in each step.
+
         args.depth = random.choice(config.depths)
         args.hidden = random.choice(config.hiddens)
-        # [args.ch_conv1, args.ch_conv2, args.ch_conv3] = sorted(
-        #     [random.choice(convs) for _ in range(3)])
-        # [args.l_hidden1, args.l_hidden2] = sorted(
-        #     [random.choice(hidden) for _ in range(2)])
-
         args.nan_mode = random.choice(nan_modes)
         args.normalization_mode = random.choice(normalizations)
 
@@ -195,7 +228,7 @@ def single_serach(args, data, reporter):
 
 def main():
     np.set_printoptions(precision=2, formatter={'int': '{:5d}'.format,
-                                                   'float': '{:7.2f}'.format})
+                                                'float': '{:7.2f}'.format})
     prog_args = utils.train_arg_parse()
     prog_args.cache = True
     utils.print_config(prog_args)

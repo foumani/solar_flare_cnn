@@ -402,9 +402,11 @@ def main():
     if args.experiment == "tuning":
         different_parameters_experiments(args, data)
     if args.experiment == "model":
-        train.single_run(args, data, reporter)
-    if args.experiment == "train":
+        train.config_run(args, data, reporter)
+    if args.experiment == "train": # not supported anymore
         train.dataset_search(args, data, reporter)
+    if args.experiment == "local":
+        train.local_search(args, data, reporter)
     if args.experiment == "model_experiments":
         model_experiments(args, data)
     if args.experiment == "svm":

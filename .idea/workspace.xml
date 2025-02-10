@@ -8,6 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conv_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/conv_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reporter.py" beforeDir="false" afterPath="$PROJECT_DIR$/reporter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
@@ -43,7 +44,9 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Python.experiments.executor": "Run",
+    "Python.local.executor": "Run",
     "Python.model.executor": "Run",
+    "Python.search.executor": "Run",
     "Python.single.executor": "Run",
     "Python.single_train.executor": "Run",
     "Python.svm.executor": "Run",
@@ -76,7 +79,7 @@
       </console-settings>
     </option>
   </component>
-  <component name="RunManager" selected="Python.model">
+  <component name="RunManager" selected="Python.local">
     <configuration name="cif" type="PythonConfigurationType" factoryName="Python">
       <module name="solar_flare_cnn" />
       <option name="ENV_FILES" value="" />
@@ -149,6 +152,29 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="local" type="PythonConfigurationType" factoryName="Python">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 5 --experiment local --stop 1000 --early 100 --verbose 3 --cache --configreport local.csv" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="lstm" type="PythonConfigurationType" factoryName="Python">
       <module name="solar_flare_cnn" />
       <option name="ENV_FILES" value="" />
@@ -212,7 +238,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 5 --experiment model --depth 32,64,128 --kernelsize 7,7,5 --nan 0 --batch 1024 --norm scale --poolingsize 4 --poolingstrat max --hidden 32,64 --k 5000,3500 --nan 0 --valp 0.8 --importance 0.4,0.6 --datadrop 0.3 --layerdrop 0.3 --seed 42 --earlystop 15 --stop 100 --verbose 5" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 1 --experiment model --depth 32,64,128 --kernelsize 9,9,9 --nan 0 --batch 1024 --norm scale --poolingsize 5 --poolingstrat max --hidden 32,64 --n 5000,3500 --nan 0 --valp 0.8 --importance 0.4,0.6 --datadrop 0.3 --layerdrop 0.3 --seed 42 --earlystop 15 --stop 100 --verbose 5 --modelreport largest.csv --configreport largest_config.csv --cache" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -235,7 +261,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 1 --experiment train --search 1 --verbose 5" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 5 --experiment train --search 10 --stop 100 --verbose 5" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -275,6 +301,7 @@
       <item itemvalue="Python.minirocket" />
       <item itemvalue="Python.cif" />
       <item itemvalue="Python.search" />
+      <item itemvalue="Python.local" />
       <item itemvalue="Python.model" />
     </list>
   </component>
@@ -325,7 +352,7 @@
       <workItem from="1738876339919" duration="9069000" />
       <workItem from="1738942614504" duration="24834000" />
       <workItem from="1739038613702" duration="751000" />
-      <workItem from="1739142070339" duration="9052000" />
+      <workItem from="1739142070339" duration="17290000" />
     </task>
     <servers />
   </component>
@@ -343,11 +370,28 @@
       </map>
     </option>
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/reporter.py</url>
+          <line>192</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="pd.concat([pre_report_df, df]).round(decimals=4)" language="Python" />
+      </configuration>
+    </watches-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$train.coverage" NAME="train Coverage Results" MODIFIED="1739146786646" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$local.coverage" NAME="local Coverage Results" MODIFIED="1739169318715" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$train.coverage" NAME="search Coverage Results" MODIFIED="1739164154981" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$svm.coverage" NAME="svm Coverage Results" MODIFIED="1738967885725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$experiments.coverage" NAME="experiments Coverage Results" MODIFIED="1738892548024" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$single.coverage" NAME="model Coverage Results" MODIFIED="1739152951659" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$single.coverage" NAME="model Coverage Results" MODIFIED="1739168219361" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$single_train.coverage" NAME="single_train Coverage Results" MODIFIED="1738566116935" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

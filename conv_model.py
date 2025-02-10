@@ -16,12 +16,14 @@ class ConvModel(nn.Module):
         self.conv1 = nn.Conv1d(in_channels=24,
                                out_channels=self.args.depth[0],
                                kernel_size=args.kernel_size[0],
+                               padding=int((args.kernel_size[0] - 1) / 2),
                                bias=True)  # [ n_batch x conv1_ch x time-series ]
         self.pool1 = pooling(kernel_size=args.pooling_size,
                              stride=2)  # [ n_batch x conv1_ch x time-series ]
         self.conv2 = nn.Conv1d(in_channels=self.args.depth[0],
                                out_channels=self.args.depth[1],
                                kernel_size=args.kernel_size[1],
+                               padding=int((args.kernel_size[1] - 1) / 2),
                                bias=True)  # [ n_batch x conv2_ch x time-series ]
         self.pool2 = pooling(kernel_size=args.pooling_size,
                              stride=2)  # [ n_batch x conv2_ch x time-series ]
@@ -30,6 +32,7 @@ class ConvModel(nn.Module):
             self.conv3 = nn.Conv1d(in_channels=self.args.depth[1],
                                    out_channels=self.args.depth[2],
                                    kernel_size=args.kernel_size[2],
+                                   padding=int((args.kernel_size[2] - 1) / 2),
                                    bias=True)  # [ n_batch x conv3_ch x time-series ]
             self.pool3 = pooling(kernel_size=args.pooling_size,
                                  stride=2)  # [ n_batch x conv3_ch x time-series ]
