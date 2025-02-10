@@ -10,8 +10,7 @@ from utils import Metric
 
 class Algorithm:
 
-    def __init__(self, args, model, criterion, optimizer, dataholder,
-                 reporter: Reporter):
+    def __init__(self, args, model, criterion, optimizer, dataholder, reporter: Reporter):
         super(Algorithm, self).__init__()
         self.args = args
         self.model = model
@@ -70,7 +69,7 @@ class Algorithm:
     def emb(self, dataholder):
         self.model.load_state_dict(self.best_model_wts)
         self.model.eval()
-        emb = np.empty(shape=(0, self.model.conv3_channels))
+        emb = np.empty(shape=(0, self.model.depth[2]))
         y_emb = np.empty((0,))
         for i, (X, y) in enumerate(dataholder):
             X_emb = self.model.exp_last_layer(X).detach().cpu().numpy()

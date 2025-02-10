@@ -191,19 +191,19 @@ def pooling2_tuning(args, data):
 hiddens = [16, 32, 64, 128]
 
 
-def lhidden1_tuning(args, data):
+def hidden0_tuning(args, data):
     run_vals = []
     for var in hiddens:
-        args.l_hidden1 = var
+        args.hidden[0] = var
         val, test = train.cross_val(args, data, None)
         run_vals.append(test)
     return run_vals
 
 
-def lhidden2_tuning(args, data):
+def hidden1_tuning(args, data):
     run_vals = []
     for var in hiddens:
-        args.l_hidden2 = var
+        args.hidden[1] = var
         val, test = train.cross_val(args, data, None)
         run_vals.append(test)
     return run_vals

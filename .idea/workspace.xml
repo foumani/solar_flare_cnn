@@ -7,7 +7,8 @@
     <list default="true" id="6c5bcd17-3344-4f10-b472-d717b3ba9557" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/algorithm.py" beforeDir="false" afterPath="$PROJECT_DIR$/algorithm.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conv_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/conv_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reporter.py" beforeDir="false" afterPath="$PROJECT_DIR$/reporter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
@@ -234,7 +235,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --search 3 --experiment train --search 1 --verbose 3" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 1 --experiment train --search 1 --verbose 5" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -297,7 +298,9 @@
       <workItem from="1738719911520" duration="1869000" />
       <workItem from="1738772121147" duration="2920000" />
       <workItem from="1738876339919" duration="9069000" />
-      <workItem from="1738942614504" duration="23901000" />
+      <workItem from="1738942614504" duration="24834000" />
+      <workItem from="1739038613702" duration="751000" />
+      <workItem from="1739142070339" duration="4187000" />
     </task>
     <servers />
   </component>
@@ -316,7 +319,7 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$train.coverage" NAME="train Coverage Results" MODIFIED="1738975950759" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$train.coverage" NAME="train Coverage Results" MODIFIED="1739146786646" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$svm.coverage" NAME="svm Coverage Results" MODIFIED="1738967885725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$experiments.coverage" NAME="experiments Coverage Results" MODIFIED="1738892548024" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$single_train.coverage" NAME="single_train Coverage Results" MODIFIED="1738566116935" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />

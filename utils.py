@@ -146,8 +146,8 @@ def hash_name(args):
 
     hash_str += f"_batch{args.batch_size}"
 
-    hash_str += f"_model{[args.ch_conv1, args.ch_conv2, args.ch_conv3]}"
-    hash_str += f"{[args.l_hidden1, args.l_hidden2]}"
+    hash_str += f"_model{[args.depth[0], args.depth[1], args.depth[2]]}"
+    hash_str += f"{[args.hidden[0], args.hidden[1]]}"
 
     hash_str += f"_{args.nan_mode}" if args.nan_mode is not None else "_None"
     hash_str += f"_do{[args.data_dropout, args.layer_dropout]}"
@@ -168,8 +168,8 @@ def hash_model(args):
 
     hash_str += f"_batch{args.batch_size}"
 
-    hash_str += f"_model{[args.ch_conv1, args.ch_conv2, args.ch_conv3]}"
-    hash_str += f"{[args.l_hidden1, args.l_hidden2]}"
+    hash_str += f"_model{[args.depth[0], args.depth[1], args.depth[2]]}"
+    hash_str += f"{[args.hidden[0], args.hidden[1]]}"
 
     hash_str += f"_{args.nan_mode}" if args.nan_mode is not None else "_None"
     hash_str += f"_do{[args.data_dropout, args.layer_dropout]}"

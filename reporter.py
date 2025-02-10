@@ -78,7 +78,7 @@ class BaselineReporter:
             columns=["run no.", "train_k", "train_n", "nan_mode",
                      "normalization", "all_test_runs"])
 
-    def model_row(self, args, all_test_metric):
+    def model_row(self, args, metric):
         if args.verbose < 0: return
         self.model_report_df.loc[len(self.model_report_df.index)] = [
             args.run_no,
@@ -86,9 +86,9 @@ class BaselineReporter:
             args.train_n,
             args.nan_mode,
             args.normalization_mode,
-            all_test_metric]
+            metric]
 
-    def split_row(self, args, test_metric):
+    def split_row(self, args, metric):
         if args.verbose < 0: return
         self.split_report_df.loc[len(self.split_report_df.index)] = [
             args.run_no,
@@ -97,7 +97,7 @@ class BaselineReporter:
             args.train_n,
             args.nan_mode,
             args.normalization_mode,
-            test_metric]
+            metric]
 
     def save_split_report(self, args, incremental=False):
         if args.verbose < 0: return
@@ -141,8 +141,8 @@ class Reporter:
             args.batch_size,
             args.train_k,
             args.train_n,
-            [args.ch_conv1, args.ch_conv2, args.ch_conv3],
-            [args.l_hidden1, args.l_hidden2],
+            [args.depth[0], args.depth[1], args.depth[2]],
+            [args.hidden[0], args.hidden[1]],
             [args.data_dropout, args.layer_dropout],
             args.nan_mode,
             args.class_importance,
@@ -163,8 +163,8 @@ class Reporter:
             args.batch_size,
             args.train_k,
             args.train_n,
-            [args.ch_conv1, args.ch_conv2, args.ch_conv3],
-            [args.l_hidden1, args.l_hidden2],
+            [args.depth[0], args.depth[1], args.depth[2]],
+            [args.hidden[0], args.hidden[1]],
             [args.data_dropout, args.layer_dropout],
             args.nan_mode,
             args.class_importance,
@@ -207,11 +207,11 @@ class Reporter:
             if args.verbose < 2: return
             strat = "def"
             print(f"              Filter Size   Pool Size   Pool strat   Depth   Neurons\n"
-                  f"Conv Block 1: {args.kernel_size[0]}             {args.pooling_size}           {strat}          {args.ch_conv1:3d}      -\n"
-                  f"Conv Block 2: {args.kernel_size[1]}             {args.pooling_size}           {strat}          {args.ch_conv2:3d}      -\n"
-                  f"Conv Block 3: {args.kernel_size[2]}             {args.pooling_size}           {strat}          {args.ch_conv3:3d}      -\n"
-                  f"FCN Layer  1: -             -           -            -       {args.l_hidden1:3d}\n"
-                  f"FCN Layer  1: -             -           -            -       {args.l_hidden2:3d}")
+                  f"Conv Block 1: {args.kernel_size[0]}             {args.pooling_size}           {strat}          {args.depth[0]:3d}      -\n"
+                  f"Conv Block 2: {args.kernel_size[1]}             {args.pooling_size}           {strat}          {args.depth[1]:3d}      -\n"
+                  f"Conv Block 3: {args.kernel_size[2]}             {args.pooling_size}           {strat}          {args.depth[2]:3d}      -\n"
+                  f"FCN Layer  1: -             -           -            -       {args.hidden[0]:3d}\n"
+                  f"FCN Layer  1: -             -           -            -       {args.hidden[1]:3d}")
 
     class RunReporter:
         @staticmethod
@@ -245,7 +245,7 @@ class Reporter:
         @staticmethod
         def best_test(args, metric):
             if args.verbose < 3: return
-            print(f"run no. {args.run_no}, test {args.test_part}, test run    : {metric}") # todo: add test part
+            print(f"run no. {args.run_no}, test {args.test_part}, test run    : {metric}")
 
     class EpochReporter:
         @staticmethod
