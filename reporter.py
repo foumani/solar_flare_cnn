@@ -129,9 +129,9 @@ class Reporter:
                      "all_best_val_runs",
                      "all_test_runs"])
         self.config_report_df = pd.DataFrame(
-            columns=["id", "batch_size", "n", "depth", "hiddens", "dropout", "nan",
-                     "importance", "lr", "seed", "tss", "hss2", "acc", "prec", "rec",
-                     "f1"]
+            columns=["id", "stop", "batch_size", "n", "filter", "depth", "hidden",
+                     "pooling", "dropout", "nan", "importance", "lr", "seed", "tss",
+                     "hss2", "acc", "prec", "rec", "f1"]
         )
         self.experiment = Reporter.ExperimentReporter()
         self.config = Reporter.ConfigReporter()
@@ -186,13 +186,19 @@ class Reporter:
             rec = [m.recall for m in metrics]
             f1 = [m.f1 for m in metrics]
 
-            return ((np.average(tss).item(), np.std(tss).item()), (np.average(hss2).item(), np.std(hss2).item()),
-                    (np.average(acc).item(), np.std(acc).item()), (np.average(prec).item(), np.std(prec).item()),
-                    (np.average(rec).item(), np.std(rec).item()), (np.average(f1).item(), np.std(f1).item()))
+            return ((np.average(tss).item(), np.std(tss).item()),
+                    (np.average(hss2).item(), np.std(hss2).item()),
+                    (np.average(acc).item(), np.std(acc).item()),
+                    (np.average(prec).item(), np.std(prec).item()),
+                    (np.average(rec).item(), np.std(rec).item()),
+                    (np.average(f1).item(), np.std(f1).item()))
+
         tss, hss2, acc, prec, rec, f1 = stats(metrics)
         self.config_report_df.loc[len(self.config_report_df.index)] = [
             utils.hash_model(args),
-            args.batch_size, args.train_n, args.depth, args.hidden,
+            [args.stop, args.early_stop], args.batch_size, args.train_n,
+            args.kernel_size, args.depth, args.hidden,
+            [args.pooling_size, args.pooling_strat],
             [args.data_dropout, args.layer_dropout], args.nan_mode, args.class_importance,
             args.lr, args.seed, tss, hss2, acc, prec, rec, f1
         ]

@@ -54,7 +54,6 @@ class ConvModel(nn.Module):
         torch.nn.init.xavier_uniform_(self.conv2.weight)
         if self.args.depth[2] > 0:
             torch.nn.init.xavier_uniform_(self.conv3.weight)
-        # torch.nn.init.xavier_uniform_(self.linear1.weight)
         if self.args.hidden[1] > 0:
             torch.nn.init.xavier_uniform_(self.linear2.weight)
         torch.nn.init.xavier_uniform_(self.l_out.weight)

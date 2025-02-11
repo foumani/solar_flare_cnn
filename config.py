@@ -1,3 +1,5 @@
+from preprocess import Normalizer
+
 filter_sizes = [[5, 5, 5], [5, 5, 7], [5, 5, 9],
                 [5, 7, 5], [5, 7, 7], [5, 7, 9],
                 [5, 9, 5], [5, 9, 7], [5, 9, 9],
@@ -20,11 +22,7 @@ hiddens = [[8, 8],
            [64, 8], [64, 16], [64, 32], [64, 64],
            [128, 8], [128, 16], [128, 32], [128, 64], [128, 128]]
 
-depths = [[2, 4, 6], [3, 6, 9], [4, 8, 12],
-          [6, 12, 18], [8, 16, 24], [12, 24, 36],
-          [16, 32, 48], [20, 40, 60], [30, 60, 90],
-
-          [2, 4, 8],    [3, 6, 12],    [4, 8, 16],
+depths = [[2, 4, 8],    [3, 6, 12],    [4, 8, 16],
           [6, 12, 24],  [8, 16, 32],  [12, 24, 48],
           [16, 32, 64], [20, 40, 80], [30, 60, 120]]
 
@@ -34,19 +32,19 @@ def optimal_model(args, binary=None):
         binary = args.binary
     args.binary = binary
     if binary:
-        args.train_n = [5000, 3500]  # [2250, 1600] # [1400, 1000]
-        args.depth = [32, 64, 128]  # [32, 64, 128]
-        args.hidden = [32, 64]  # [32, 64]
-        args.nan_mode = 0
-        args.batch_size = 1024  # 1024
-        args.normalization_mode = "scale"
-        args.data_dropout = 0.3
-        args.layer_dropout = 0.3  # 0.3
-        args.class_importance = [0.4, 0.6]  # [0.4, 0.6]
-        args.val_p = 0.8  # 0.3 # 0.6
+        args.train_n = [5500, 3500]  # [2250, 1600] # [1400, 1000]
         args.kernel_size = [7, 7, 5]
+        args.depth = [32, 64, 128]  # [32, 64, 128]
         args.pooling_size = 4
         args.pooling_strat = "max"
+        args.hidden = [64, 32]
+        args.nan_mode = 0
+        args.normalization_mode = Normalizer.scale
+        args.batch_size = 1024  # 1024
+        args.data_dropout = 0.4
+        args.layer_dropout = 0.3  # 0.3
+        args.class_importance = [0.4, 0.6]  # [0.4, 0.6]
+        args.val_p = 0.5
         args.seed = 42
     else:
         args.batch_size = 256
@@ -54,7 +52,7 @@ def optimal_model(args, binary=None):
         args.depth = [64, 32, 0]
         args.hidden = [32, 0]
         args.nan_mode = "avg"
-        args.normalization_mode = "scale"
+        args.normalization_mode = Normalizer.scale
         args.class_importance = [1, 1, 5, 15]
         args.lr = 0.01
         args.data_dropout = 0.2

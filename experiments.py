@@ -407,6 +407,8 @@ def main():
         train.dataset_search(args, data, reporter)
     if args.experiment == "local":
         train.local_search(args, data, reporter)
+    if args.experiment == "ablation":
+        train.ablation(args, data, reporter)
     if args.experiment == "model_experiments":
         model_experiments(args, data)
     if args.experiment == "svm":

@@ -98,25 +98,52 @@ def local_search(args, data, reporter):
         args.pooling_size = pooling[0]
         args.pooling_strat = pooling[1]
         config_run(args, data, reporter)
-        break
 
     for depth in config.depths:
         config.optimal_model(args, binary=True)
-        args.depths = depth
+        args.depth = depth
         config_run(args, data, reporter)
-        break
 
     for hidden in config.hiddens:
         config.optimal_model(args, binary=True)
         args.hidden = hidden
         config_run(args, data, reporter)
-        break
 
     for filter_size in config.filter_sizes:
         config.optimal_model(args, binary=True)
         args.kernel_size = filter_size
         config_run(args, data, reporter)
-        break
+
+
+def ablation(args, data, reporter):
+    """
+    Executes the optimal model with different configurations for including or excluding
+    the last layer and the last convolution block.
+    :param args:
+    :param data:
+    :param reporter:
+    :return:
+    """
+    # last conv and last hidden gone
+    config.optimal_model(args, binary=True)
+    args.depth[2] = 0
+    args.hidden[1] = 0
+    config_run(args, data, reporter)
+
+    # last conv gone
+    config.optimal_model(args, binary=True)
+    args.depth[2] = 0
+    config_run(args, data, reporter)
+
+    # last hidden gone
+    config.optimal_model(args, binary=True)
+    args.hidden[1] = 0
+    config_run(args, data, reporter)
+
+    # normal run
+    config.optimal_model(args, binary=True)
+    config_run(args, data, reporter)
+
 
 
 
