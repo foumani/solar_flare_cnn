@@ -51,3 +51,5 @@ class Normalizer:
     def __repr__(self):
         return (f"{Normalizer.__name__}(min: {self.X_min}, max:{self.X_max},"
                 f"avg: {self.X_avg}, std: {self.X_std})")
+
+

@@ -1,5 +1,4 @@
 import itertools
-import os
 import random
 
 import torch.nn as nn

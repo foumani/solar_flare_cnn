@@ -18,7 +18,6 @@ def reset_seeds(args):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-
 def arg_parse(manual=None):
     parser = common_arg_parse(manual)
     parser.add_argument("--learning_rate", dest="lr", default=0.01, type=float,
@@ -164,6 +163,7 @@ def initialize(args):
         else:
             sys.exit("options for --norm: not given, scale, zscore")
     args.ablation = False
+    args.saved_seed = args.seed
 
     if args.split_report_filename is None:
         args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"

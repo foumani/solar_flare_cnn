@@ -24,7 +24,7 @@ hiddens = [[8, 8],
 
 depths = [[2, 4, 8],    [3, 6, 12],    [4, 8, 16],
           [6, 12, 24],  [8, 16, 32],  [12, 24, 48],
-          [16, 32, 64], [20, 40, 80], [30, 60, 120]]
+          [16, 32, 64], [24, 48, 96], [32, 64, 128]]
 
 
 def optimal_model(args, binary=None):
@@ -33,8 +33,8 @@ def optimal_model(args, binary=None):
     args.binary = binary
     if binary:
         args.train_n = [5500, 3500]  # [2250, 1600] # [1400, 1000]
-        args.kernel_size = [7, 7, 5]
-        args.depth = [32, 64, 128]  # [32, 64, 128]
+        args.kernel_size = [7,7,5] # [7, 7, 5]
+        args.depth = [16, 32, 64] # [32, 64, 128]
         args.pooling_size = 4
         args.pooling_strat = "max"
         args.hidden = [64, 32]

@@ -123,6 +123,7 @@ def multi_run(args, data, method, report=True):
 
 
 def randomized_search(args, data, method):
+    # todo: set the ranges again
     dataset_grid = []
     training_modes = ["k", "n"]  # 2
     if args.binary:

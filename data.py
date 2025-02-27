@@ -15,20 +15,20 @@ import utils
 
 
 class FlairDataset(Dataset):
-    
+
     def __init__(self, X, y):
         self.X = X
         self.y = y
-    
+
     def __getitem__(self, index):
         return self.X[index], self.y[index]
-    
+
     def __len__(self):
         return self.X.shape[0]
 
 
 class Data:
-    
+
     def __init__(self, args, verbose=False):
         create_files_df_if_not_exists(args.data_dir, args.files_df_filename)
         self.all_files_df = read_files_df(args.data_dir, args.files_df_filename)
@@ -40,10 +40,10 @@ class Data:
         self.saved_datasets = dict()
         self.verbose = verbose
         self.parts = []
-    
+
     def numpy_datasets(self, args):
         train_parts = [i for i in range(1, 6) if i not in [args.test_part]]
-        
+
         X_train_np, y_train_np = self.numpy_dataset(train_parts,
                                                     args.normalization_mode,
                                                     args.data_dir,
@@ -54,7 +54,7 @@ class Data:
                                                     binary=args.binary)
         if self.verbose:
             self.print_stats("train", y_train_np, args.binary)
-        
+
         if args.val_p is not None:
             val_idx = np.random.choice(int(len(X_train_np)),
                                        int(len(X_train_np) * args.val_p),
@@ -67,7 +67,7 @@ class Data:
             y_train_np = y_train_np[~val_mask]
         else:
             X_val_np, y_val_np = None, None
-        
+
         X_test_np, y_test_np = self.numpy_dataset([args.test_part],
                                                   args.normalization_mode,
                                                   args.data_dir,
@@ -76,9 +76,9 @@ class Data:
                                                   cache=args.cache)
         if self.verbose:
             self.print_stats("test ", y_test_np, args.binary)
-        
+
         return X_train_np, y_train_np, X_val_np, y_val_np, X_test_np, y_test_np
-    
+
     def numpy_dataset(self, parts, normalization_mode, data_dir, k=None, n=None,
                       train=False, nan_mode=None, binary=True, cache=False):
         hash_dataset = f"{utils.hash_dataset(parts, k, n, nan_mode, binary)}"
@@ -95,8 +95,7 @@ class Data:
             X, y = self.preprocess(X, y, normalization_mode, train)
             self.saved_datasets[hash_dataset] = (X, y, norm_vals)
         else:
-            files_df = split(self.all_files_df, partitions=parts, k=k, n=n,
-                             binary=binary)
+            files_df = split(self.all_files_df, partitions=parts, k=k, n=n, binary=binary)
             X, y = read_instances(files_df, self.all_files_np, binary)
             X, y = preprocess.nan_to_num(X, y, nan_mode)
             self.normalizer.fit(X)
@@ -107,9 +106,8 @@ class Data:
             if cache:
                 self.saved_datasets[hash_dataset] = (X, y, norm_vals)
         return X, y
-    
+
     def preprocess(self, X, y, normalization_mode, train=False):
-        start_time = time.time()
         if train:
             self.normalizer = preprocess.Normalizer()
             X_norm = self.normalizer.fit_transform(X, normalization_mode)
@@ -118,14 +116,14 @@ class Data:
         p = np.random.permutation(len(X_norm))
         X_norm, y = X_norm[p], y[p]
         return X_norm, y
-    
+
     @staticmethod
     def print_stats(prefix, y, binary):
         stats = statistics(y, n_class=2 if binary else 4)
         a, portion = stats["n"], stats["portion"]
         follow_up = ["BCQ", "MX"] if binary else ["Q", "BC", "M", "X"]
         print(f"{prefix}: {a:5d} all, {list(zip(portion, follow_up))}")
-    
+
     @staticmethod
     def dataholders(args, X_train_np, y_train_np, X_val_np, y_val_np,
                     X_test_np, y_test_np, test=False):
@@ -157,7 +155,7 @@ def create_partition_files_df(partition_dir, files_df_path=None):
             "active_region": [],
             "partition": [],
             "label": []}
-    
+
     for flare in os.listdir(partition_dir):
         flare_path = os.path.join(partition_dir, flare)
         for file_name in os.listdir(flare_path):
@@ -266,7 +264,7 @@ def statistics(np_array, n_class):
 def read_instances(files_df, files_np, binary):
     i, n = 0, len(files_df)
     X, y = np.empty((n, 24, 60)), np.empty(n)
-    
+
     pbar = tqdm(total=n, unit="files", smoothing=0.01, disable=True)
     for index, row in files_df.iterrows():
         if binary:
@@ -279,7 +277,7 @@ def read_instances(files_df, files_np, binary):
             label = 2
         else:
             label = 3
-        
+
         y[i] = label
         X[i] = deepcopy(files_np[index])
         i += 1

@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 
 import baselines
 import config
@@ -398,7 +399,8 @@ def main():
     # plot_tuning_experiments()
     #
     # draw_embeddings_tsne(model_args, data)
-
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
     if args.experiment == "tuning":
         different_parameters_experiments(args, data)
     if args.experiment == "model":
