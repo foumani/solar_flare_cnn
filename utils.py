@@ -37,10 +37,14 @@ def arg_parse(manual=None):
     parser.add_argument("--importance", dest="class_importance", default=None,
                         required=False,
                         help="Comma-seperated list specifying the importance of each class. (e.g., 0.4,0.6)")
+    parser.add_argument("--plots", dest="plots", default="plots")
+    parser.add_argument("--results", dest="results", default="log/results")
     parser.add_argument("--gpu", nargs="?", const=0, type=int,
                         help="Run on GPU. Optionally specify GPU ID (default: 0 if the flag is provided without a value).")
     parser.add_argument('--multi', dest='binary', action="store_false",
                         help="Disable binary classification to run multi-class classification (currently not supported).")
+    parser.add_argument("--ndbsr", dest="ndbsr", action="store_true",
+                        help="Enable Near Decision Boundary Sample Removal.")
     parser.add_argument('--runs', dest='runs', default=1, type=int,
                         help='Number of times to run the model (default: 1).')
     parser.add_argument("--datadir", dest="data_dir", required=True,
@@ -130,6 +134,10 @@ def initialize(args):
         os.makedirs("./experiments_plot")
     if not os.path.exists("./plots"):
         os.makedirs("./plots")
+    if not os.path.exists(args.plots):
+        os.makedirs(args.plots)
+    if not os.path.exists(args.results):
+        os.makedirs(args.results)
 
     if args.train_n is not None:
         args.train_n = [int(a) for a in args.train_n.split(",")]
@@ -164,6 +172,7 @@ def initialize(args):
             sys.exit("options for --norm: not given, scale, zscore")
     args.ablation = False
     args.saved_seed = args.seed
+    args.saliency = False
 
     if args.split_report_filename is None:
         args.split_report_filename = f"split_report_{'binary' if args.binary else 'multi'}.csv"

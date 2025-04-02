@@ -5,6 +5,7 @@ import torch.nn as nn
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 from sklearn.manifold import TSNE
+import os
 
 import config
 import utils
@@ -59,18 +60,22 @@ def train(args, data: Data, reporter: Reporter):
              test[0].y.cpu().detach().numpy(),
              utils.hash_name(args),
              args.binary)
-    if reporter is not None:
-        reporter.split_row(args, algo.best_val_run_metric, test_metric)
-        reporter.save_split_report(args, incremental=True)
-    return algo.best_val_run_metric, test_metric
+    reporter.split_row(args, algo.best_val_run_metric, test_metric)
+    reporter.save_split_report(args, incremental=True)
+    saliency = np.zeros([24, 60])
+    if args.saliency:
+        saliency = algo.my_saliency(test)
+    return saliency, algo.best_val_run_metric, test_metric
 
 
 def cross_val(args, data, reporter):
     all_val_metric = Metric(binary=args.binary)
     all_test_metric = Metric(binary=args.binary)
+    saliency_all = np.zeros([24, 60])
     for test_part in range(1, 6):
         args.test_part = test_part
-        best_val_run_metric, test_metric = train(args, data, reporter)
+        saliency, best_val_run_metric, test_metric = train(args, data, reporter)
+        saliency_all += saliency
         all_val_metric += best_val_run_metric
         all_test_metric += test_metric
     if reporter is not None:
@@ -78,7 +83,7 @@ def cross_val(args, data, reporter):
         reporter.save_model_report(args, incremental=True)
     reporter.run.val(args, all_val_metric)
     reporter.run.test(args, all_test_metric)
-    return all_val_metric, all_test_metric
+    return saliency_all, all_val_metric, all_test_metric
 
 
 def config_run(args, data, reporter):
@@ -86,7 +91,7 @@ def config_run(args, data, reporter):
     utils.reset_seeds(args)
     for i in range(args.runs):
         args.run_no = i
-        all_val_metric, all_test_metric = cross_val(args, data, reporter)
+        _, all_val_metric, all_test_metric = cross_val(args, data, reporter)
         run_metrics.append(all_test_metric)
     reporter.config_row(args, run_metrics)
     reporter.save_config_report(args, incremental=True)
@@ -143,7 +148,46 @@ def ablation(args, data, reporter):
     config.optimal_model(args, binary=True)
     config_run(args, data, reporter)
 
+def saliency_map(args, data, reporter):
+    config.optimal_model(args, binary=True)
+    utils.reset_seeds(args)
 
+    args.run_no = 0
+    args.saliency = True
+    args.verbose = 5
+    saliency, _, _ = cross_val(args, data, reporter)
+    np.save("saliency.npy", saliency)
+    # plt.figure(figsize=(8, 4))
+    # plt.imshow(saliency, aspect='auto', cmap='hot')
+    # plt.colorbar(label='Saliency')
+    # plt.xlabel('Timesteps')
+    # plt.ylabel('Features')
+    # plt.title('Aggregated Saliency Map')
+    # saliency = np.sum(saliency, axis=1)
+    # plt.savefig(os.path.join(args.log_dir, "saliency_map.eps"))
+
+    # plt.figure(figsize=(10, 5))
+    # saliency_sum = np.sum(saliency, axis=1)
+    # plt.plot(saliency_sum)
+
+def search(args, data, reporter):
+    for _ in range(args.n_search):
+        args.train_n = random.choice(config.split_sizes)
+        args.nan_mode = random.choice(config.nan_modes)
+        args.normalization_mode = random.choice(config.normalizations)
+        args.batch_size = 1024
+        args.val_p = 0.5
+
+        args.kernel_size = random.choice(config.filter_sizes)
+        args.depth = random.choice(config.depths)
+        args.pooling_size = random.choice([2, 3, 4])
+        args.pooling_strat = random.choice(["mean", "max"])
+        args.hidden = random.choice(config.hiddens)
+        args.data_dropout = random.choice([0.2, 0.4, 0.6])
+        args.layer_dropout = random.choice([0.1, 0.3, 0.5])
+        args.class_importance = [0.4, 0.6]
+
+        config_run(args, data, reporter)
 
 
 def dataset_search(args, data, reporter):
@@ -250,6 +294,8 @@ def single_serach(args, data, reporter):
         args.normalization_mode = random.choice(normalizations)
         args.class_importance = random.choice(class_importances)
         cross_val(args, data, reporter)
+
+
 
 
 def main():

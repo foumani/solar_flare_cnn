@@ -99,12 +99,12 @@ class BaselineReporter:
             args.normalization_mode,
             metric]
 
-    def save_split_report(self, args, incremental=False):
+    def save_split_report(self, args, incremental=True):
         if args.verbose < 0: return
         loc = os.path.join(args.log_dir, args.split_report_filename)
-        save_report(loc, self.model_report_df, incremental)
+        save_report(loc, self.split_report_df, incremental)
 
-    def save_model_report(self, args, incremental=False):
+    def save_model_report(self, args, incremental=True):
         if args.verbose < 0: return
         loc = os.path.join(args.log_dir, args.model_report_filename)
         save_report(loc, self.model_report_df, incremental)

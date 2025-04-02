@@ -7,16 +7,17 @@ import config
 import train
 import utils
 from data import Data
-from reporter import Reporter
+from reporter import Reporter, BaselineReporter
 from utils import Metric
 import time
 import warnings
 
 
-def run_experiment(args, data, method):
+def run_experiment(args, data, reporter, method):
     run_vals = []
-    for _ in range(args.runs):
-        test = baselines.cross_val(args, data, None, method)
+    for run_no in range(args.runs):
+        args.run_no = run_no
+        test = baselines.cross_val(args, data, reporter, method)
         run_vals.append(test)
 
     print(f"method {method.__name__} runvals = {run_vals}, "
@@ -31,7 +32,7 @@ def model_experiment(args, data, n=1, save=True):
     run_vals = []
     for run_no in range(n):
         args.run_no = run_no
-        val, test = train.cross_val(args, data, Reporter())
+        _, val, test = train.cross_val(args, data, Reporter())
         run_vals.append(test)
 
     if save:
@@ -39,49 +40,49 @@ def model_experiment(args, data, n=1, save=True):
                 np.array([run_val.cm for run_val in run_vals]))
 
 
-def svm_experiments(args, data, opt_args):
+def svm_experiments(args, data, reporter, opt_args):
     if opt_args:
         args = config.optimal_svm(args, True)
     else:
         args = config.optimal_model(args, True)
     utils.reset_seeds(args)
-    run_experiment(args, data, baselines.baseline_svm)
+    run_experiment(args, data, reporter, baselines.baseline_svm)
 
 
-def minirocket_experiments(args, data, opt_args):
+def minirocket_experiments(args, data, reporter, opt_args):
     if opt_args:
-        config.optimal_minirocket(args, True)
+        args = config.optimal_minirocket(args, True)
     else:
         args = config.optimal_model(args, True)
     utils.reset_seeds(args)
-    run_experiment(args, data, baselines.baseline_minirocket)
+    run_experiment(args, data, reporter, baselines.baseline_minirocket)
 
 
-def lstm_experiments(args, data, opt_args):
+def lstm_experiments(args, data, reporter, opt_args):
     if opt_args:
-        config.optimal_lstm(args, True)
+        args = config.optimal_lstm(args, True)
     else:
         args = config.optimal_model(args, True)
     utils.reset_seeds(args)
-    run_experiment(args, data, baselines.baseline_lstmfcn)
+    run_experiment(args, data, reporter, baselines.baseline_lstmfcn)
 
 
-def cif_experiments(args, data, opt_args):
+def cif_experiments(args, data, reporter, opt_args):
     if opt_args:
-        config.optimal_cif(args, True)
+        args = config.optimal_cif(args, True)
     else:
         args = config.optimal_model(args, True)
     utils.reset_seeds(args)
-    run_experiment(args, data, baselines.baseline_cif)
+    run_experiment(args, data, reporter, baselines.baseline_cif)
 
 
-def cnn_experiments(args, data, opt_args):
+def cnn_experiments(args, data, reporter, opt_args):
     if opt_args:
-        config.optimal_cnn(args, True)
+        args = config.optimal_cnn(args, True)
     else:
         args = config.optimal_model(args, True)
     utils.reset_seeds(args)
-    run_experiment(args, data, baselines.baseline_cnn)
+    run_experiment(args, data, reporter, baselines.baseline_cnn)
 
 
 def model_experiments(args, data):
@@ -99,152 +100,6 @@ def model_experiments(args, data):
     # model_experiment(args, data, n=10)
 
 
-depths = [16, 32, 64, 128]
-
-
-def depth1_tuning(args, data):
-    run_vals = []
-    for var in depths:
-        args.ch_conv1 = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def depth2_tuning(args, data):
-    run_vals = []
-    for var in depths:
-        args.ch_conv2 = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def depth3_tuning(args, data):
-    run_vals = []
-    for var in depths:
-        args.ch_conv3 = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-filters = [3, 5, 7]
-
-
-def filter0_tuning(args, data):
-    run_vals = []
-    for var in depths:
-        args.kernel_size[0] = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def filter1_tuning(args, data):
-    run_vals = []
-    for var in depths:
-        args.kernel_size[1] = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def filter2_tuning(args, data):
-    run_vals = []
-    for var in depths:
-        args.kernel_size[2] = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-poolings = [3, 4, 5]
-
-
-def pooling0_tuning(args, data):
-    run_vals = []
-    for var in poolings:
-        args.pooling_size[0] = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def pooling1_tuning(args, data):
-    run_vals = []
-    for var in poolings:
-        args.pooling_size[1] = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def pooling2_tuning(args, data):
-    run_vals = []
-    for var in poolings:
-        args.pooling_size[2] = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-hiddens = [16, 32, 64, 128]
-
-
-def hidden0_tuning(args, data):
-    run_vals = []
-    for var in hiddens:
-        args.hidden[0] = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def hidden1_tuning(args, data):
-    run_vals = []
-    for var in hiddens:
-        args.hidden[1] = var
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def different_parameters_experiments(args, data):
-    # args = config.optimal_model(args, binary=True)
-    # tuning_experiment(args, data, lhidden1_tuning, n=args.runs)
-    # args = config.optimal_model(args, binary=True)
-    # tuning_experiment(args, data, lhidden2_tuning, n=args.runs)
-    #
-    # args = config.optimal_model(args, binary=True)
-    # tuning_experiment(args, data, depth1_tuning, n=args.runs)
-    # args = config.optimal_model(args, binary=True)
-    # tuning_experiment(args, data, depth2_tuning, n=args.runs)
-    # args = config.optimal_model(args, binary=True)
-    # tuning_experiment(args, data, depth3_tuning, n=args.runs)
-
-    args = config.optimal_model(args, binary=True)
-    tuning_experiment(args, data, filter0_tuning, n=args.runs)
-    args = config.optimal_model(args, binary=True)
-    tuning_experiment(args, data, filter1_tuning, n=args.runs)
-    args = config.optimal_model(args, binary=True)
-    tuning_experiment(args, data, filter2_tuning, n=args.runs)
-
-    args = config.optimal_model(args, binary=True)
-    tuning_experiment(args, data, pooling0_tuning, n=args.runs)
-    args = config.optimal_model(args, binary=True)
-    tuning_experiment(args, data, pooling1_tuning, n=args.runs)
-    args = config.optimal_model(args, binary=True)
-    tuning_experiment(args, data, pooling2_tuning, n=args.runs)
-
-
-def tuning_experiments(args, data):
-    args = config.optimal_model(args, binary=True)
-    tuning_experiment(args, data, lr_tuning)
-    args = config.optimal_model(args, binary=True)
-    tuning_experiment(args, data, p_tuning)
-
-
 def draw_embeddings_tsne(args, data):
     args = config.optimal_model(args, binary=True)
     args.draw = True
@@ -253,24 +108,6 @@ def draw_embeddings_tsne(args, data):
     args = config.optimal_model(args, binary=False)
     args.draw = True
     model_experiment(args, data, n=1, save=False)
-
-
-def p_tuning(args, data):
-    run_vals = []
-    for i in range(9):
-        args.val_p = i * 0.1 + 0.1
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
-
-
-def lr_tuning(args, data):
-    run_vals = []
-    for i in [0.001, 0.01, 0.1]:
-        args.lr = i
-        val, test = train.cross_val(args, data, None)
-        run_vals.append(test)
-    return run_vals
 
 
 def tuning_experiment(args, data, method, n=10):
@@ -387,8 +224,10 @@ def main():
     args = utils.arg_parse()
     data = Data(args, verbose=False)
     reporter = Reporter()
+    baseline_reporter = BaselineReporter()
     start = time.time()
-    warnings.filterwarnings("ignore", category=UserWarning, module=r"torch\.nn\.modules\.lazy")
+    warnings.filterwarnings("ignore", category=UserWarning,
+                            module=r"torch\.nn\.modules\.lazy")
     # model_experiment(args, data, n=1)
     # model_experiments(model_args, data)
     # plot_ablation_comparison()
@@ -401,12 +240,12 @@ def main():
     # draw_embeddings_tsne(model_args, data)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    if args.experiment == "tuning":
-        different_parameters_experiments(args, data)
     if args.experiment == "model":
         train.config_run(args, data, reporter)
-    if args.experiment == "train": # not supported anymore
-        train.dataset_search(args, data, reporter)
+    if args.experiment == "search":
+        train.search(args, data, reporter)
+    if args.experiment == "saliency":
+        train.saliency_map(args, data, reporter)
     if args.experiment == "local":
         train.local_search(args, data, reporter)
     if args.experiment == "ablation":
@@ -414,15 +253,18 @@ def main():
     if args.experiment == "model_experiments":
         model_experiments(args, data)
     if args.experiment == "svm":
-        svm_experiments(args, data, opt_args=True)
+        svm_experiments(args, data, baseline_reporter, opt_args=True)
     if args.experiment == "lstm":
-        lstm_experiments(args, data, reporter)
+        lstm_experiments(args, data, baseline_reporter, opt_args=True)
     if args.experiment == "minirocket":
-        minirocket_experiments(args, data, reporter)
+        minirocket_experiments(args, data, baseline_reporter, opt_args=True)
     if args.experiment == "cnn":
-        cnn_experiments(args, data, reporter)
+        cnn_experiments(args, data, baseline_reporter, opt_args=True)
     if args.experiment == "cif":
-        cif_experiments(args, data, reporter)
+        cif_experiments(args, data, baseline_reporter, opt_args=True)
+    if args.experiment == "plot":
+        # data.plot_ar_hist(args)
+        data.plot_instance_removal(args)
 
     reporter.experiment.time(args, start, time.time())
 

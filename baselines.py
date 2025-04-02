@@ -11,6 +11,7 @@ from sktime.classification.deep_learning import LSTMFCNClassifier, CNNClassifier
 from sktime.classification.interval_based import CanonicalIntervalForest
 from sktime.transformations.panel.rocket import MiniRocketMultivariate
 
+import config
 import utils
 from data import Data
 from preprocess import Normalizer
@@ -99,64 +100,39 @@ def cross_val(args, data, reporter, method):
         print(f"test part {test_part}: {test_metric}, "
               f"run time: {run_time * 1000:.0f} ms")
         all_tests_metric += test_metric
-        if reporter is not None:
-            reporter.split_row(args, test_metric)
+        reporter.split_row(args, test_metric)
+        reporter.save_split_report(args, incremental=True)
     print(f"method {method.__name__} all tests: {all_tests_metric}")
     return all_tests_metric
 
 
-def multi_run(args, data, method, report=True):
-    binary_str = "binary" if args.binary else "multi"
-    args.split_report_filename = f"{method.__name__}-split-{binary_str}.csv"
-    args.model_report_filename = f"{method.__name__}-model-{binary_str}.csv"
-    if report:
-        reporter = BaselineReporter()
-    else:
-        reporter = None
+def multi_run(args, data, method):
+    args.split_report_filename = f"{method.__name__}-split.csv"
+    args.model_report_filename = f"{method.__name__}-model.csv"
+
+    reporter = BaselineReporter()
+    utils.reset_seeds(args)
     for i in range(args.runs):
         args.run_no = i
         test_metric = cross_val(args, data, reporter, method)
         reporter.model_row(args, test_metric)
-    if report:
-        reporter.save_model_report(args, incremental=True)
-        reporter.save_split_report(args, incremental=True)
+        reporter.save_model_report(args)
 
 
 def randomized_search(args, data, method):
-    # todo: set the ranges again
-    dataset_grid = []
-    training_modes = ["k", "n"]  # 2
-    if args.binary:
-        bcq = [i for i in range(400, 4001, 400)]  # 10
-        mx = [i for i in range(200, 1401, 200)]  # 7
-        dataset_grid.extend(list(itertools.product(bcq, mx)))
-    else:
-        q = [i for i in range(400, 1601, 400)]  # 4
-        bc = [i for i in range(300, 1201, 300)]  # 4
-        m = [i for i in range(200, 801, 200)]  # 4
-        x = [i for i in range(40, 181, 40)]  # 4
-        dataset_grid.extend(list(itertools.product(q, bc, m, x)))
-    nan_modes = [0, None, "avg"]
-    normalizations = [Normalizer.scale, Normalizer.z_score]
-    grid = list(itertools.product(training_modes, dataset_grid, nan_modes,
-                                  normalizations))
-    randomized = random.sample(grid, k=args.n_search)
-    print(f"Searching through {len(randomized)} items")
-    for training_mode, split, nan_mode, normalization in randomized:
-        print()
-        print(f"Next random search -------------------------------------------")
-        print(f"training mode: {training_mode}, "
-              f"split: {split}, "
-              f"nan_mode: {nan_mode}, "
-              f"normalization: {normalization}")
-        if training_mode == "n":
-            args.train_n = split
-            args.train_k = None
-        else:
-            args.train_k = split
-            args.train_n = None
-        args.nan_mode = nan_mode
-        args.normalization_mode = normalization
+    print()
+    print(f"Next random search -------------------------------------------")
+    print(f"training mode: {'n'}, "
+          f"split: {args.train_n}, "
+          f"nan_mode: {args.nan_mode}, "
+          f"normalization: {args.normalization_mode}")
+
+    rng = random.Random(args.seed)
+    for _ in range(args.n_search):
+        args.train_n = rng.choice(config.split_sizes)
+        args.train_k = None
+        args.nan_mode = rng.choice(config.nan_modes)
+        args.normalization_mode = rng.choice(config.normalizations)
         multi_run(args, data, method)
 
 
@@ -165,15 +141,15 @@ def main():
     args = utils.arg_parse()
     data = Data(args)
     method = None
-    if args.method == "svm":
+    if args.experiment == "svm":
         method = baseline_svm
-    elif args.method == "minirocket":
+    elif args.experiment == "minirocket":
         method = baseline_minirocket
-    elif args.method == "lstm":
+    elif args.experiment == "lstm":
         method = baseline_lstmfcn
-    elif args.method == "cif":
+    elif args.experiment == "cif":
         method = baseline_cif
-    elif args.method == "cnn":
+    elif args.experiment == "cnn":
         method = baseline_cnn
     print(method.__name__)
     randomized_search(args, data, method)

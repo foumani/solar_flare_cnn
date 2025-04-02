@@ -103,3 +103,55 @@ class Algorithm:
                 l_points += len(y)
                 l_dataloader += len(y)
         return running_loss / l_points, metric, l_dataloader
+
+    def generate_saliency(self, input_data, target_class=1):
+        self.model.eval()
+
+        # Ensure the input requires gradient.
+        input_data = input_data.clone().detach().requires_grad_(True)
+
+        # Forward pass
+        output = self.model(input_data)
+
+        # Select target class if not provided
+        if target_class is None:
+            target_class = output.argmax(dim=1).item()
+
+        # Zero gradients
+        self.model.zero_grad()
+
+        # Compute loss for the target class and backpropagate
+        loss = output[0, target_class]
+        loss.backward()
+
+        # The saliency map is the absolute value of the gradients of the input
+        saliency = input_data.grad.abs()
+
+        # Option 1: Return full saliency map (shape [1, 24, 60])
+        # Option 2: Aggregate across features (or timesteps) if you prefer a summary.
+        # For example, to get a time-wise saliency (across features):
+        # saliency_time, _ = torch.max(saliency, dim=1)  # shape: [1, 60]
+
+        # Squeeze to remove the batch dimension for visualization
+        return saliency.squeeze()  # shape: [24, 60]
+
+    def my_saliency(self, dataloader):
+        self.model.eval()
+        saliency_all =  np.zeros([24, 60])
+        for i, (X, y) in enumerate(dataloader):
+            if X.get_device() != self.args.device:
+                X = X.to(self.args.device)
+            if y.get_device() != self.args.device:
+                y = y.to(self.args.device)
+            X = X.clone().requires_grad_(True)
+
+            self.model.zero_grad()
+            output = self.model(X)
+            loss = self.criterion(output, y)
+            loss.backward()
+
+            saliency = X.grad.abs()
+            saliency = torch.sum(saliency, dim=0)
+            saliency_all += saliency.detach().cpu().numpy()
+
+        return saliency_all

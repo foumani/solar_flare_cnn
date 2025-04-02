@@ -1,7 +1,7 @@
 import os
 import random
 import re
-import time
+import matplotlib.pyplot as plt
 from copy import deepcopy
 
 import numpy as np
@@ -41,12 +41,113 @@ class Data:
         self.verbose = verbose
         self.parts = []
 
+    def plot_ar_hist(self, args):
+        print(self.all_files_df.columns)
+        print(self.all_files_df["path"].loc[0])
+        print(self.all_files_df["active_region"].head(10))
+
+        counts = self.all_files_df[
+            'active_region'].value_counts()  # you can adjust bins as needed
+        print(counts)
+        print(type(counts))
+
+        # print(counts.hist())
+        # print(counts.columns)
+        # plt.hist(counts, bins=1)
+        counts.hist(bins=24)
+        plt.xlabel('Number of Occurances per AR')
+        plt.ylabel('Number of ARs')
+        plt.title('Distribution of AR Frequencies')
+        plt.savefig("dist_ar_freq.eps", format='eps', dpi=300, bbox_inches='tight')
+        plt.show()
+
+    def plot_instance_removal(self, args):
+        print(self.all_files_df.columns)
+        print(self.all_files_df.head(5))
+        print(self.all_files_df["partition"].head(5))
+        counts = self.all_files_df["label"].value_counts()
+        print(counts)
+        print(counts["Q"])
+
+        before = dict()
+        after = dict()
+        for c in ['partition1', 'partition2', 'partition3', 'partition4', 'partition5']:
+            before[c] = {"Q": 0,
+                         "B": 0,
+                         "C": 0,
+                         "M": 0,
+                         "X": 0}
+
+            after[c] = {"Q": 0,
+                        "B": 0,
+                        "C": 0,
+                        "M": 0,
+                        "X": 0}
+
+        vals = {"Q": 0,
+                "B": 0,
+                "C": 0,
+                "M": 0,
+                "X": 0}
+
+        indices = np.isnan(self.all_files_np).any(axis=(1, 2))
+        for index, row in self.all_files_df.iterrows():
+            y = row["label"]
+            partition = row["partition"]
+            before[partition][y] += 1
+            if indices[index]:
+                continue
+            after[partition][y] += 1
+            if y == "Q":
+                vals["Q"] += 1
+            elif y == "B":
+                vals["B"] += 1
+            elif y == "C":
+                vals["C"] += 1
+            elif y == "M":
+                vals["M"] += 1
+            elif y == "X":
+                vals["X"] += 1
+
+        print(vals)
+
+        labels = ['Q', 'B', 'C', 'M', 'X']
+
+        for partition in ['partition1', 'partition2', 'partition3', 'partition4',
+                          'partition5']:
+            print("partition", partition)
+            print("before", before[partition])
+            print("after", after[partition])
+            print()
+
+        values1 = [counts[labels[i]] for i in range(5)]
+        values2 = [vals[labels[i]] for i in range(5)]
+
+        x = np.arange(len(labels))  # positions of groups on x-axis
+        width = 0.35  # width of each bar
+
+        fig, ax = plt.subplots()
+        bars1 = ax.bar(x - width / 2, values1, width, label='Before Instance Removal')
+        bars2 = ax.bar(x + width / 2, values2, width, label='After Instance Removal')
+
+        # Labels and formatting
+        ax.set_xlabel('Flare Class')
+        ax.set_ylabel('Count')
+        ax.set_title('Number of Flare Classes Before and After Instance Removal')
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels)
+        ax.legend()
+
+        plt.tight_layout()
+        plt.savefig("instance_removal.eps", format='eps', dpi=300, bbox_inches='tight')
+        plt.show()
+
     def numpy_datasets(self, args):
         train_parts = [i for i in range(1, 6) if i not in [args.test_part]]
 
         X_train_np, y_train_np = self.numpy_dataset(train_parts,
                                                     args.normalization_mode,
-                                                    args.data_dir,
+                                                    args,
                                                     args.train_k,
                                                     args.train_n,
                                                     train=True,
@@ -70,7 +171,7 @@ class Data:
 
         X_test_np, y_test_np = self.numpy_dataset([args.test_part],
                                                   args.normalization_mode,
-                                                  args.data_dir,
+                                                  args,
                                                   nan_mode=args.nan_mode,
                                                   binary=args.binary,
                                                   cache=args.cache)
@@ -79,10 +180,10 @@ class Data:
 
         return X_train_np, y_train_np, X_val_np, y_val_np, X_test_np, y_test_np
 
-    def numpy_dataset(self, parts, normalization_mode, data_dir, k=None, n=None,
+    def numpy_dataset(self, parts, normalization_mode, args, k=None, n=None,
                       train=False, nan_mode=None, binary=True, cache=False):
         hash_dataset = f"{utils.hash_dataset(parts, k, n, nan_mode, binary)}"
-        dataset_loc = os.path.join(data_dir, hash_dataset)
+        dataset_loc = os.path.join(args.data_dir, hash_dataset)
         if cache and hash_dataset in self.saved_datasets:
             (X, y, norm_vals) = deepcopy(self.saved_datasets[hash_dataset])
             if train:
@@ -95,7 +196,9 @@ class Data:
             X, y = self.preprocess(X, y, normalization_mode, train)
             self.saved_datasets[hash_dataset] = (X, y, norm_vals)
         else:
-            files_df = split(self.all_files_df, partitions=parts, k=k, n=n, binary=binary)
+            files_df = split(self.all_files_df, partitions=parts, args=args, k=k, n=n,
+                             binary=binary)
+            # todo: here we got some near decision boundary.
             X, y = read_instances(files_df, self.all_files_np, binary)
             X, y = preprocess.nan_to_num(X, y, nan_mode)
             self.normalizer.fit(X)
@@ -196,6 +299,15 @@ def create_files_numpy(data_dir, file_path, files_df):
     np.save(file_path, X)
 
 
+def data_columns(args):
+    dir = os.path.join(args.data_dir, "partition1")  # partition
+    dir = os.path.join(dir, os.listdir(dir)[0])  # flare
+    file = os.path.join(dir, os.listdir(dir)[0])
+
+    df = pandas.read_csv(file, delimiter="\t")
+    return df.columns
+
+
 def choose_from_active_regions(files_df, k):
     indices = []
     active_regions = files_df.active_region.unique()
@@ -211,14 +323,12 @@ def choose_from_active_regions(files_df, k):
     return files_df.loc[indices]
 
 
-def split(files_df, partitions, k=None, n=None, binary=True):
+def split(files_df, partitions, args, k=None, n=None, binary=True):
     if binary:
-        bcq = files_df.query(
-            f"(partition == {[f'partition{i}' for i in partitions]})"
-            f" and (label == ['B', 'C', 'Q'])")
-        mx = files_df.query(
-            f"(partition == {[f'partition{i}' for i in partitions]})"
-            f" and (label == ['M', 'X'])")
+        bcq = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
+                             f" and (label == ['B', 'C', 'Q'])")
+        mx = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
+                            f" and (label == ['M', 'X'])")
         if n is not None:
             bcq = bcq.sample(n=min(n[0], len(bcq)), replace=False)
             mx = mx.sample(n=min(n[1], len(mx)), replace=False)
@@ -227,18 +337,14 @@ def split(files_df, partitions, k=None, n=None, binary=True):
             mx = choose_from_active_regions(mx, k=k[1])
         return pandas.concat([bcq, mx])
     else:
-        q = files_df.query(
-            f"(partition == {[f'partition{i}' for i in partitions]})"
-            f" and (label == ['Q'])")
-        bc = files_df.query(
-            f"(partition == {[f'partition{i}' for i in partitions]})"
-            f" and (label == ['B', 'C'])")
-        m = files_df.query(
-            f"(partition == {[f'partition{i}' for i in partitions]})"
-            f" and (label == ['M'])")
-        x = files_df.query(
-            f"(partition == {[f'partition{i}' for i in partitions]})"
-            f" and (label == ['X'])")
+        q = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
+                           f" and (label == ['Q'])")
+        bc = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
+                            f" and (label == ['B', 'C'])")
+        m = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
+                           f" and (label == ['M'])")
+        x = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
+                           f" and (label == ['X'])")
         if n is not None:
             q = q.sample(n=min(n[0], len(q)), replace=False)
             bc = bc.sample(n=min(n[1], len(bc)), replace=False)
@@ -293,8 +399,7 @@ def create_files_df_if_not_exists(data_dir, files_df_filename):
             if "partition" not in partition_dir:
                 continue
             partition_dirs.append(os.path.join(data_dir, partition_dir))
-            create_files_df(partition_dirs,
-                            os.path.join(data_dir, files_df_filename))
+            create_files_df(partition_dirs, os.path.join(data_dir, files_df_filename))
         print("Created all files df")
 
 
@@ -302,9 +407,7 @@ def create_files_numpy_if_not_exists(data_dir, files_np_filename, files_df):
     print(os.path.join(data_dir, files_np_filename))
     if not os.path.exists(os.path.join(data_dir, files_np_filename)):
         print("Creating all files numpy ...")
-        create_files_numpy(data_dir,
-                           os.path.join(data_dir, files_np_filename),
-                           files_df)
+        create_files_numpy(data_dir, os.path.join(data_dir, files_np_filename), files_df)
 
 
 def read_files_df(data_dir, files_df_filename):

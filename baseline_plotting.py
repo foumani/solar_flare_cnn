@@ -22,7 +22,7 @@ def run_experiment(args, data, method):
 def model_experiment(args, data):
     run_vals = []
     for _ in range(10):
-        val, test = train.cross_val(args, data, None)
+        _, val, test = train.cross_val(args, data, None)
         run_vals.append(test)
     
     np.save(

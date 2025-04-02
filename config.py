@@ -22,10 +22,15 @@ hiddens = [[8, 8],
            [64, 8], [64, 16], [64, 32], [64, 64],
            [128, 8], [128, 16], [128, 32], [128, 64], [128, 128]]
 
-depths = [[2, 4, 8],    [3, 6, 12],    [4, 8, 16],
-          [6, 12, 24],  [8, 16, 32],  [12, 24, 48],
+depths = [[2, 4, 8], [3, 6, 12], [4, 8, 16],
+          [6, 12, 24], [8, 16, 32], [12, 24, 48],
           [16, 32, 64], [24, 48, 96], [32, 64, 128]]
 
+split_sizes = [(i*500, j*500) for i in range(1, 11) for j in range(1, i+1)]
+
+nan_modes = [None, 0, "avg"]
+
+normalizations = [Normalizer.scale, Normalizer.z_score]
 
 def optimal_model(args, binary=None):
     if binary is None:
@@ -33,8 +38,8 @@ def optimal_model(args, binary=None):
     args.binary = binary
     if binary:
         args.train_n = [5500, 3500]  # [2250, 1600] # [1400, 1000]
-        args.kernel_size = [7,7,5] # [7, 7, 5]
-        args.depth = [16, 32, 64] # [32, 64, 128]
+        args.kernel_size = [7, 7, 5]  # [7, 7, 5]
+        args.depth = [16, 32, 64]  # [32, 64, 128]
         args.pooling_size = 4
         args.pooling_strat = "max"
         args.hidden = [64, 32]
@@ -67,7 +72,7 @@ def optimal_svm(args, binary=None):
     args.binary = binary
     if binary:
         args.train_n = None
-        args.train_k = [3200, 1200]
+        args.train_k = [5000, 1500]
         args.nan_mode = "avg"
         args.normalization_mode = "z_score"
     else:
@@ -83,10 +88,10 @@ def optimal_minirocket(args, binary=None):
         binary = args.binary
     args.binary = binary
     if binary:
-        args.train_n = [400, 200]
+        args.train_n = [4500, 2000]
         args.train_k = None
         args.nan_mode = 0
-        args.normalization_mode = "scale"
+        args.normalization_mode = "z_score"
     else:
         args.train_n = None
         args.train_k = [400, 300, 200, 40]
@@ -100,10 +105,10 @@ def optimal_lstm(args, binary=None):
         binary = args.binary
     args.binary = binary
     if binary:
-        args.train_n = None
-        args.train_k = [1200, 400]
-        args.nan_mode = None
-        args.normalization_mode = "scale"
+        args.train_n = [5000, 1500]
+        args.train_k = None
+        args.nan_mode = "avg"
+        args.normalization_mode = "z_score"
     else:
         args.train_n = [1600, 900, 200, 160]
         args.train_k = None
@@ -117,10 +122,10 @@ def optimal_cif(args, binary=None):
         binary = args.binary
     args.binary = binary
     if binary:
-        args.train_n = [2000, 1400]
+        args.train_n = [1500, 1500]
         args.train_k = None
         args.nan_mode = 0
-        args.normalization_mode = "z_score"
+        args.normalization_mode = "scale"
     else:
         args.train_n = [400, 300, 200, 160]
         args.train_k = None
@@ -134,10 +139,10 @@ def optimal_cnn(args, binary=None):
         binary = args.binary
     args.binary = binary
     if binary:
-        args.train_n = None
-        args.train_k = [1600, 400]
-        args.nan_mode = 0
-        args.normalization_mode = "scale"
+        args.train_n = [5000, 1500]
+        args.train_k = None
+        args.nan_mode = "avg"
+        args.normalization_mode = "z_score"
     else:
         args.train_n = [400, 900, 600, 160]
         args.train_k = None
