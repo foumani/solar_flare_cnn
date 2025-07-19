@@ -1,6 +1,10 @@
 plots/
 log/
+log5/
 experiments_plot/
+experiments_plot5/
+logFinal/
+plots/
 model/
 *.txt
 *.out

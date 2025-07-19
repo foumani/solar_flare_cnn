@@ -6,11 +6,12 @@ import baselines
 import config
 import train
 import utils
-from data import Data
+from data import Data, data_columns
 from reporter import Reporter, BaselineReporter
 from utils import Metric
 import time
 import warnings
+import os
 
 
 def run_experiment(args, data, reporter, method):
@@ -24,7 +25,7 @@ def run_experiment(args, data, reporter, method):
           f"avg: {np.average([val.tss for val in run_vals])}")
 
     poster = f"_{args.poster}" if args.poster is not None else ""
-    np.save(f"./experiments_plot/{method.__name__}_{args.binary}{poster}_cm.npy",
+    np.save(f"./{args.results_dir}/{method.__name__}_{args.binary}{poster}_cm.npy",
             np.array([run_val.cm for run_val in run_vals]))
 
 
@@ -36,7 +37,7 @@ def model_experiment(args, data, n=1, save=True):
         run_vals.append(test)
 
     if save:
-        np.save(f"./experiments_plot/train_{args.binary}_cm_{args.ablation}.npy",
+        np.save(f"./{args.results_dir}/train_{args.binary}_cm_{args.ablation}.npy",
                 np.array([run_val.cm for run_val in run_vals]))
 
 
@@ -44,7 +45,7 @@ def svm_experiments(args, data, reporter, opt_args):
     if opt_args:
         args = config.optimal_svm(args, True)
     else:
-        args = config.optimal_model(args, True)
+        args = config.no_preprocess(args)
     utils.reset_seeds(args)
     run_experiment(args, data, reporter, baselines.baseline_svm)
 
@@ -53,7 +54,7 @@ def minirocket_experiments(args, data, reporter, opt_args):
     if opt_args:
         args = config.optimal_minirocket(args, True)
     else:
-        args = config.optimal_model(args, True)
+        args = config.no_preprocess(args)
     utils.reset_seeds(args)
     run_experiment(args, data, reporter, baselines.baseline_minirocket)
 
@@ -62,7 +63,7 @@ def lstm_experiments(args, data, reporter, opt_args):
     if opt_args:
         args = config.optimal_lstm(args, True)
     else:
-        args = config.optimal_model(args, True)
+        args = config.no_preprocess(args)
     utils.reset_seeds(args)
     run_experiment(args, data, reporter, baselines.baseline_lstmfcn)
 
@@ -71,19 +72,63 @@ def cif_experiments(args, data, reporter, opt_args):
     if opt_args:
         args = config.optimal_cif(args, True)
     else:
-        args = config.optimal_model(args, True)
+        args = config.no_preprocess(args)
     utils.reset_seeds(args)
     run_experiment(args, data, reporter, baselines.baseline_cif)
 
 
 def cnn_experiments(args, data, reporter, opt_args):
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     if opt_args:
         args = config.optimal_cnn(args, True)
     else:
-        args = config.optimal_model(args, True)
+        args = config.no_preprocess(args)
     utils.reset_seeds(args)
     run_experiment(args, data, reporter, baselines.baseline_cnn)
 
+def macnn_experiments(args, data, reporter, opt_args):
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+    if opt_args:
+        args = config.optimal_macnn(args, True)
+    else:
+        args = config.no_preprocess(args)
+    utils.reset_seeds(args)
+    run_experiment(args, data, reporter, baselines.baseline_macnn)
+
+
+def contreg_experiments(args, data, reporter, opt_args):
+    if opt_args:
+        args = config.optimal_contreg(args, True)
+    else:
+        args = config.no_preprocess(args)
+    utils.reset_seeds(args)
+    run_experiment(args, data, reporter, baselines.baseline_contreg)
+
+def no_preprocessing_experiments(args, data, baseline_reporter, opt_args=True):
+    utils.reset_seeds(args)
+    args.poster = "nopreprocess"
+
+    # svm
+    # svm_experiments(args, data, baseline_reporter, opt_args=False)
+
+    # lstmfcn
+    lstm_experiments(args, data, baseline_reporter, opt_args=False)
+
+    # minirocket
+    minirocket_experiments(args, data, baseline_reporter, opt_args=False)
+
+    # cnn
+    cnn_experiments(args, data, baseline_reporter, opt_args=False)
+
+    # cif
+    cif_experiments(args, data, baseline_reporter, opt_args=False)
+
+    # contreg
+    contreg_experiments(args, data, baseline_reporter, opt_args=False)
+
+    # macnn
+    args.runs = 10
+    macnn_experiments(args, data, baseline_reporter, opt_args=False)
 
 def model_experiments(args, data):
     args = config.optimal_model(args, binary=True)
@@ -116,20 +161,20 @@ def tuning_experiment(args, data, method, n=10):
         print(f"------- Running Experiment {run} of {method.__name__} -------")
         single_run_vals = method(args, data)
         run_vals.append(single_run_vals)
-    np.save(f"./experiments_plot/train_{args.binary}_cm_{method.__name__}.npy",
+    np.save(f"./{args.results_dir}/train_{args.binary}_cm_{method.__name__}.npy",
             np.array([[run_val.cm for run_val in single_run_vals]
                       for single_run_vals in run_vals]))
     return run_vals
 
 
-def plot_algorithm_comparisons(binary):
-    cif = np.load(f"./experiments_plot/baseline_cif_{binary}_cm.npy")
-    cnn = np.load(f"./experiments_plot/baseline_cnn_{binary}_cm.npy")
-    lstmfcn = np.load(f"./experiments_plot/baseline_lstmfcn_{binary}_cm.npy")
+def plot_algorithm_comparisons(args, binary):
+    cif = np.load(f"./{args.results_dir}/baseline_cif_{binary}_cm.npy")
+    cnn = np.load(f"./{args.results_dir}/baseline_cnn_{binary}_cm.npy")
+    lstmfcn = np.load(f"./{args.results_dir}/baseline_lstmfcn_{binary}_cm.npy")
     minirocket = np.load(
-        f"./experiments_plot/baseline_minirocket_{binary}_cm.npy")
-    svm = np.load(f"./experiments_plot/baseline_svm_{binary}_cm.npy")
-    mine = np.load(f"./experiments_plot/train_{binary}_cm_False.npy")
+        f"./{args.results_dir}/baseline_minirocket_{binary}_cm.npy")
+    svm = np.load(f"./{args.results_dir}/baseline_svm_{binary}_cm.npy")
+    mine = np.load(f"./{args.results_dir}/train_{binary}_cm_False.npy")
 
     cif = [Metric(binary=False, cm=cm) for cm in cif]
     cnn = [Metric(binary=False, cm=cm) for cm in cnn]
@@ -154,9 +199,9 @@ def plot_algorithm_comparisons(binary):
     plt.show()
 
 
-def plot_ablation_comparison():
-    ablation = np.load("./experiments_plot/train_True_cm_True.npy")
-    model = np.load("./experiments_plot/train_True_cm_False.npy")
+def plot_ablation_comparison(args):
+    ablation = np.load(f"./{args.results_dir}/train_True_cm_True.npy")
+    model = np.load(f"./{args.results_dir}/train_True_cm_False.npy")
     boxes = [[Metric(binary=True, cm=cm).tss for cm in ablation],
              [Metric(binary=True, cm=cm).tss for cm in model]]
 
@@ -170,8 +215,8 @@ def plot_ablation_comparison():
     plt.show()
 
 
-def plot_tuning_experiments():
-    data = np.load("./experiments_plot/train_True_cm_p_tuning.npy")
+def plot_tuning_experiments(args):
+    data = np.load(f"./{args.results_dir}/train_True_cm_p_tuning.npy")
     run_vals = []
     for single_run_vals in data:
         single_run_val = []
@@ -195,7 +240,7 @@ def plot_tuning_experiments():
     plt.savefig("plots/p_tuning_experiment.jpg")
     plt.show()
 
-    data = np.load("./experiments_plot/train_True_cm_lr_tuning.npy")
+    data = np.load(f"./{args.results_dir}/train_True_cm_lr_tuning.npy")
     run_vals = []
     for single_run_vals in data:
         single_run_val = []
@@ -218,6 +263,21 @@ def plot_tuning_experiments():
     plt.title("Effect of different learning rates")
     plt.savefig("plots/lr_tuning_experiment.jpg")
     plt.show()
+
+
+def feature_selection(args, data, reporter):
+    saliency = np.load("saliency.npy")
+    saliency_sum = np.sum(saliency, axis=1)
+    feature_names = data_columns(args)[1:25]
+    ordering = sorted(range(len(saliency_sum)), key=lambda i: saliency_sum[i],
+                      reverse=True)
+    args.ordering = ordering
+    for i in range(1, 24+1):
+        config.optimal_model(args, binary=True)
+        args.n_features = i
+        train.config_run(args, data, reporter)
+
+
 
 
 def main():
@@ -244,8 +304,12 @@ def main():
         train.config_run(args, data, reporter)
     if args.experiment == "search":
         train.search(args, data, reporter)
+    if args.experiment == "orion_search":
+        train.bohb_search(args, data, reporter)
     if args.experiment == "saliency":
         train.saliency_map(args, data, reporter)
+    if args.experiment == "feature_selection":
+        feature_selection(args, data, reporter)
     if args.experiment == "local":
         train.local_search(args, data, reporter)
     if args.experiment == "ablation":
@@ -253,18 +317,31 @@ def main():
     if args.experiment == "model_experiments":
         model_experiments(args, data)
     if args.experiment == "svm":
+        args.method_name = baselines.baseline_svm
         svm_experiments(args, data, baseline_reporter, opt_args=True)
     if args.experiment == "lstm":
+        args.method_name = baselines.baseline_lstmfcn
         lstm_experiments(args, data, baseline_reporter, opt_args=True)
     if args.experiment == "minirocket":
+        args.method_name = baselines.baseline_minirocket
         minirocket_experiments(args, data, baseline_reporter, opt_args=True)
     if args.experiment == "cnn":
+        args.method_name = baselines.baseline_cnn
         cnn_experiments(args, data, baseline_reporter, opt_args=True)
     if args.experiment == "cif":
+        args.method_name = baselines.baseline_cif
         cif_experiments(args, data, baseline_reporter, opt_args=True)
+    if args.experiment == "contreg":
+        args.method_name = baselines.baseline_contreg
+        contreg_experiments(args, data, baseline_reporter, opt_args=True)
+    if args.experiment == "macnn":
+        args.method_name = baselines.baseline_macnn
+        macnn_experiments(args, data, baseline_reporter, opt_args=True)
+    if args.experiment == "no_preprocessing":
+        no_preprocessing_experiments(args, data, baseline_reporter)
     if args.experiment == "plot":
-        # data.plot_ar_hist(args)
-        data.plot_instance_removal(args)
+        data.plot_ar_hist(args)
+        # data.plot_instance_removal(args)
 
     reporter.experiment.time(args, start, time.time())
 

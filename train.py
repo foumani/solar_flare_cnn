@@ -14,6 +14,9 @@ from conv_model import ConvModel
 from data import Data
 from preprocess import Normalizer
 from reporter import Reporter
+from orion.client import create_experiment
+import ast
+import json
 
 
 def draw(args, emb, y, hash_name, binary):
@@ -38,7 +41,9 @@ def draw(args, emb, y, hash_name, binary):
 
 
 def train(args, data: Data, reporter: Reporter):
-    train, val, test = data.dataholders(args, *data.numpy_datasets(args))
+    train, val, test = data.dataholders(args, *data.numpy_datasets(args, args.run_no))
+    if args.ordering is not None:
+        train, val, test = data.select_indices(train, val, test, args)
     model = ConvModel(args=args, output_size=2 if args.binary else 4).to(args.device)
     loss_weight = None
     if args.class_importance is not None:
@@ -52,6 +57,9 @@ def train(args, data: Data, reporter: Reporter):
                      reporter=reporter)
     algo.train(early_stop=args.early_stop)
     test_loss, test_metric = algo.test(test)
+
+    total_params = sum(p.numel() for p in model.parameters())
+    print(f"Total number of parameters: {total_params}")
     reporter.cross.best_val(args, algo.best_val_run_metric)
     reporter.cross.best_test(args, test_metric)
     if args.draw:
@@ -72,12 +80,11 @@ def cross_val(args, data, reporter):
     all_val_metric = Metric(binary=args.binary)
     all_test_metric = Metric(binary=args.binary)
     saliency_all = np.zeros([24, 60])
-    for test_part in range(1, 6):
-        args.test_part = test_part
-        saliency, best_val_run_metric, test_metric = train(args, data, reporter)
-        saliency_all += saliency
-        all_val_metric += best_val_run_metric
-        all_test_metric += test_metric
+    args.test_part = 5
+    saliency, best_val_run_metric, test_metric = train(args, data, reporter)
+    saliency_all += saliency
+    all_val_metric += best_val_run_metric
+    all_test_metric += test_metric
     if reporter is not None:
         reporter.model_row(args, val_metric=all_val_metric, test_metric=all_test_metric)
         reporter.save_model_report(args, incremental=True)
@@ -95,6 +102,12 @@ def config_run(args, data, reporter):
         run_metrics.append(all_test_metric)
     reporter.config_row(args, run_metrics)
     reporter.save_config_report(args, incremental=True)
+    utils.add_results(args, run_metrics)
+    # 🔁 Return the mean TSS across runs
+    tss_scores = [m.tss for m in run_metrics]
+    avg_tss = sum(tss_scores) / len(tss_scores)
+    return {"loss": -avg_tss}  # BOHB minimizes loss, so use -tss
+
 
 def local_search(args, data, reporter):
     for pooling in config.poolings:
@@ -148,6 +161,7 @@ def ablation(args, data, reporter):
     config.optimal_model(args, binary=True)
     config_run(args, data, reporter)
 
+
 def saliency_map(args, data, reporter):
     config.optimal_model(args, binary=True)
     utils.reset_seeds(args)
@@ -157,6 +171,7 @@ def saliency_map(args, data, reporter):
     args.verbose = 5
     saliency, _, _ = cross_val(args, data, reporter)
     np.save("saliency.npy", saliency)
+    return saliency
     # plt.figure(figsize=(8, 4))
     # plt.imshow(saliency, aspect='auto', cmap='hot')
     # plt.colorbar(label='Saliency')
@@ -170,24 +185,90 @@ def saliency_map(args, data, reporter):
     # saliency_sum = np.sum(saliency, axis=1)
     # plt.plot(saliency_sum)
 
+
 def search(args, data, reporter):
+    search_rng = random.Random(args.seed)
     for _ in range(args.n_search):
-        args.train_n = random.choice(config.split_sizes)
-        args.nan_mode = random.choice(config.nan_modes)
-        args.normalization_mode = random.choice(config.normalizations)
-        args.batch_size = 1024
+        args.train_n = search_rng.choice(config.split_sizes)
+        # args.nan_mode = search_rng.choice(config.nan_modes)
+        args.nan_mode = "local_avg"
+        args.normalization_mode = search_rng.choice(config.normalizations)
+        # args.batch_size = 1024
         args.val_p = 0.5
-
-        args.kernel_size = random.choice(config.filter_sizes)
-        args.depth = random.choice(config.depths)
-        args.pooling_size = random.choice([2, 3, 4])
-        args.pooling_strat = random.choice(["mean", "max"])
-        args.hidden = random.choice(config.hiddens)
-        args.data_dropout = random.choice([0.2, 0.4, 0.6])
-        args.layer_dropout = random.choice([0.1, 0.3, 0.5])
-        args.class_importance = [0.4, 0.6]
-
+        args.kernel_size = search_rng.choice(config.filter_sizes)
+        args.depth = search_rng.choice(config.depths)
+        args.pooling_size = search_rng.choice([2, 3, 4])
+        args.pooling_strat = search_rng.choice(["mean", "max"])
+        args.hidden = search_rng.choice(config.hiddens)
+        args.data_dropout = 0.0
+        args.layer_dropout = search_rng.choice([0.1, 0.2, 0.3, 0.4, 0.5])
+        args.class_importance = search_rng.choice(config.importance)
         config_run(args, data, reporter)
+
+
+def bohb_search(args, data, reporter):
+    def stringify_choices(choices):
+        return "choices(" + ", ".join(repr(json.dumps(c)) for c in choices) + ")"
+
+    experiment = create_experiment(
+        name="debug_bohb_test",
+        space={
+            "budget": "fidelity(1, 200, 1)",
+            "lr": "loguniform(1e-5, 1e-1)"
+        },
+        algorithm={
+            "bohb": {
+                "seed": 42,
+            }
+        },
+        max_trials=10,
+    )
+
+    space = {
+        "kernel_size": stringify_choices(config.filter_sizes),
+        "depth": stringify_choices(config.depths),
+        "hidden": stringify_choices(config.hiddens),
+        "pooling": stringify_choices(config.poolings),
+        "train_n": stringify_choices(config.split_sizes),
+        "normalization_mode": f"choices{tuple(config.normalizations)}",
+        "layer_dropout": "choices(0.1, 0.2, 0.3, 0.4, 0.5)",
+        "class_importance": stringify_choices(config.importance),
+        # "epochs": "fidelity(1, 200, 1)",  # 👈 must match exactly
+    }
+
+    print(space)
+
+    experiment = create_experiment(
+        name="bohb_config_search_full",
+        space=space,
+        algorithm={"bohb": {"seed": 42}, "budgets": {
+                "min": 1,
+                "max": 200
+            }},
+        max_trials=args.n_search,
+    )
+
+    for trial in experiment.suggested_trials:
+        args.train_n = json.loads(trial.params["train_n"])
+        args.kernel_size = json.loads(trial.params["kernel_size"])
+        args.depth = json.loads(trial.params["depth"])
+        args.hidden = json.loads(trial.params["hidden"])
+        args.pooling_size, args.pooling_strat = json.loads(trial.params["pooling"])
+        args.class_importance = json.loads(trial.params["class_importance"])
+        args.nan_mode = "local_avg"
+        args.normalization_mode = trial.params["normalization_mode"]
+        args.val_p = 0.5
+        args.depth = ast.literal_eval(trial.params["depth"])
+        args.data_dropout = 0.0
+        args.layer_dropout = trial.params["layer_dropout"]
+
+        args = config.optimal_model(args, binary=True)
+        result = config_run(args, data, reporter)
+        trial.observe(result["loss"])
+
+    # Optional: best result
+    best = experiment.best_trial
+    print("Best:", best.params, "Score:", best.objective)
 
 
 def dataset_search(args, data, reporter):
@@ -219,7 +300,6 @@ def dataset_search(args, data, reporter):
         else:
             args.train_k = split
             args.train_n = None
-
 
         args.depth = random.choice(config.depths)
         args.hidden = random.choice(config.hiddens)
@@ -294,8 +374,6 @@ def single_serach(args, data, reporter):
         args.normalization_mode = random.choice(normalizations)
         args.class_importance = random.choice(class_importances)
         cross_val(args, data, reporter)
-
-
 
 
 def main():

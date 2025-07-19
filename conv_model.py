@@ -13,7 +13,7 @@ class ConvModel(nn.Module):
             pooling = nn.MaxPool1d
         else:
             pooling = nn.AvgPool1d
-        self.conv1 = nn.Conv1d(in_channels=24,
+        self.conv1 = nn.Conv1d(in_channels=args.n_features,
                                out_channels=self.args.depth[0],
                                kernel_size=args.kernel_size[0],
                                padding=int((args.kernel_size[0] - 1) / 2),
@@ -59,18 +59,25 @@ class ConvModel(nn.Module):
         torch.nn.init.xavier_uniform_(self.l_out.weight)
         self.batch_norm1 = nn.BatchNorm1d(self.args.depth[0])
         self.batch_norm2 = nn.BatchNorm1d(self.args.depth[1])
+        self.batch_norm3 = nn.BatchNorm1d(self.args.depth[2])
 
     def forward(self, X):
         X = F.dropout(X, p=self.args.data_dropout)
 
-        X = self.pool1(F.leaky_relu(self.conv1(X)))
+        X = self.conv1(X)
+        X = self.batch_norm1(X)
+        X = self.pool1(F.leaky_relu(X))
         X = F.dropout(X, p=self.args.layer_dropout)
 
-        X = self.pool2(F.leaky_relu(self.conv2(X)))
+        X = self.conv2(X)
+        X = self.batch_norm2(X)
+        X = self.pool2(F.leaky_relu(X))
         X = F.dropout(X, p=self.args.layer_dropout)
 
         if self.args.depth[2] > 0:
-            X = self.pool3(F.leaky_relu(self.conv3(X)))
+            X = self.conv3(X)
+            X = self.batch_norm3(X)
+            X = self.pool3(F.leaky_relu(X))
             X = F.dropout(X, p=self.args.layer_dropout)
 
         X = X.reshape(X.shape[0], -1)

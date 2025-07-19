@@ -2,6 +2,7 @@ import os
 import random
 import re
 import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 from copy import deepcopy
 
 import numpy as np
@@ -12,6 +13,9 @@ from tqdm import tqdm
 
 import preprocess
 import utils
+from imblearn.over_sampling import SMOTE
+from tsaug import AddNoise, Dropout, Quantize
+import pandas as pd
 
 
 class FlairDataset(Dataset):
@@ -39,7 +43,28 @@ class Data:
         self.normalizer = preprocess.Normalizer()
         self.saved_datasets = dict()
         self.verbose = verbose
+        self.np_rng = np.random.default_rng(seed=args.seed)
+        self.pd_rng_state = np.random.default_rng(seed=args.seed+1)
+        self.saved = dict()
         self.parts = []
+        self.remove_mostly_bad()
+        self.pre_processed = dict()
+
+    def remove_mostly_bad(self):
+        """
+        Removes the instances where more than 25% of the data is missing
+        :return:
+        """
+        mask = (self.all_files_np[:, :23, :] == 0)
+        self.all_files_np[:, :23, :][mask] = np.nan
+        print(self.all_files_np.shape)
+        print(self.all_files_np[self.all_files_np == 0].shape)
+        is_nan_or_zero = (self.all_files_np == 0) | np.isnan(self.all_files_np)
+        count_zero_or_nan = is_nan_or_zero.sum(axis=(1, 2))
+        is_mostly_good = count_zero_or_nan < (60 * 24 / 8)
+        self.all_files_np = self.all_files_np[is_mostly_good]
+        self.all_files_df = self.all_files_df[is_mostly_good]
+        self.all_files_df = self.all_files_df.reset_index(drop=True)
 
     def plot_ar_hist(self, args):
         print(self.all_files_df.columns)
@@ -54,11 +79,17 @@ class Data:
         # print(counts.hist())
         # print(counts.columns)
         # plt.hist(counts, bins=1)
-        counts.hist(bins=24)
-        plt.xlabel('Number of Occurances per AR')
-        plt.ylabel('Number of ARs')
-        plt.title('Distribution of AR Frequencies')
-        plt.savefig("dist_ar_freq.eps", format='eps', dpi=300, bbox_inches='tight')
+        counts.hist(bins=24, weights=(np.ones(len(counts)) * 100.0) / len(counts))
+        plt.xlabel('Number of instances per active region')
+        plt.ylabel('Percentage of active regions')
+        plt.title('Distribution of Active Region Instance Frequencies')
+        # plt.gca().yaxis.set_major_formatter(PercentFormatter())
+        ax = plt.gca()
+        ax.yaxis.set_major_formatter(PercentFormatter())
+        yticks = ax.get_yticks()
+        yticks = [tick for tick in yticks if tick < 11.0]
+        ax.set_yticks(yticks)
+        plt.savefig("dist_ar_freq_noline.eps", format='eps', dpi=300, bbox_inches='tight')
         plt.show()
 
     def plot_instance_removal(self, args):
@@ -142,53 +173,147 @@ class Data:
         plt.savefig("instance_removal.eps", format='eps', dpi=300, bbox_inches='tight')
         plt.show()
 
-    def numpy_datasets(self, args):
+    def numpy_datasets(self, args, run):  # todo: add saving later on
+        self.np_rng = np.random.default_rng(seed=args.seed + run)
+        self.pd_rng_state = np.random.default_rng(seed=args.seed + run + 1)
+
+        # read data
         train_parts = [i for i in range(1, 6) if i not in [args.test_part]]
+        X_train_np, y_train_np, files_df_train = self.load(args, train_parts)
+        # if args.val_p is not None:  # we are always going to use this, there is valp
+        val_idx = self.np_rng.choice(int(len(X_train_np)),
+                                     int(len(X_train_np) * args.val_p),
+                                     replace=False)
+        val_mask = np.zeros(len(X_train_np), dtype=bool)
+        val_mask[val_idx] = True
+        X_val_np = deepcopy(X_train_np[val_mask])
+        y_val_np = deepcopy(y_train_np[val_mask])
+        X_train_np = X_train_np[~val_mask]
+        y_train_np = y_train_np[~val_mask]
+        files_df_val = files_df_train[val_mask]
+        files_df_train = files_df_train[~val_mask]
+        # else:
+        #     X_val_np, y_val_np = None, None
 
-        X_train_np, y_train_np = self.numpy_dataset(train_parts,
-                                                    args.normalization_mode,
-                                                    args,
-                                                    args.train_k,
-                                                    args.train_n,
-                                                    train=True,
-                                                    nan_mode=args.nan_mode,
-                                                    binary=args.binary)
-        if self.verbose:
-            self.print_stats("train", y_train_np, args.binary)
+        X_train_np = deepcopy(X_train_np)
+        y_train_np = deepcopy(y_train_np)
+        files_df_train = deepcopy(files_df_train)
+        X_val_np = deepcopy(X_val_np)
+        y_val_np = deepcopy(y_val_np)
+        files_df_val = deepcopy(files_df_val)
 
-        if args.val_p is not None:
-            val_idx = np.random.choice(int(len(X_train_np)),
-                                       int(len(X_train_np) * args.val_p),
-                                       replace=False)
-            val_mask = np.zeros(len(X_train_np), dtype=bool)
-            val_mask[val_idx] = True
-            X_val_np = deepcopy(X_train_np[val_mask])
-            y_val_np = deepcopy(y_train_np[val_mask])
-            X_train_np = X_train_np[~val_mask]
-            y_train_np = y_train_np[~val_mask]
+
+        # nan to num
+        X_train_np, y_train_np, files_df_train = preprocess.nan_to_num(X_train_np, y_train_np, files_df_train,
+                                                       args.nan_mode)
+        X_val_np, y_val_np, files_df_val = preprocess.nan_to_num(X_val_np, y_val_np, files_df_val, args.nan_mode)
+
+
+        test_cache_loc = f"part{args.test_part}_nan{args.nan_mode}"
+        if test_cache_loc not in self.pre_processed:
+            print(args.nan_mode)
+            X_test_np, y_test_np, files_df_test = self.load(args, [args.test_part], full=True)
+            X_test_np = deepcopy(X_test_np)
+            y_test_np = deepcopy(y_test_np)
+            X_test_np, y_test_np, files_df_test = preprocess.nan_to_num(X_test_np, y_test_np, files_df_test, args.nan_mode)
+            self.pre_processed[test_cache_loc] = (X_test_np, y_test_np)
         else:
-            X_val_np, y_val_np = None, None
+            (X_test_np, y_test_np) = self.pre_processed[test_cache_loc]
 
-        X_test_np, y_test_np = self.numpy_dataset([args.test_part],
-                                                  args.normalization_mode,
-                                                  args,
-                                                  nan_mode=args.nan_mode,
-                                                  binary=args.binary,
-                                                  cache=args.cache)
-        if self.verbose:
-            self.print_stats("test ", y_test_np, args.binary)
+        # normalize
+        normalizer = preprocess.Normalizer()
+        X_train_np = normalizer.fit_transform(X_train_np, args.normalization_mode)
+        X_val_np = normalizer.transform(X_val_np, args.normalization_mode)
+        X_test_np = normalizer.transform(X_test_np, args.normalization_mode)
 
-        return X_train_np, y_train_np, X_val_np, y_val_np, X_test_np, y_test_np
+
+
+        # Near Decision Boundary Sample Removal
+        if args.ndbsr:
+            print(
+                f"There are ({(y_train_np == 0).sum()}, {(y_train_np == 1).sum()}) instances.")
+            i, j, n = 0, 0, len(files_df_train)
+            X, y = np.empty((n, 24, 60)), np.empty(n)
+            mask = np.full(n, False)
+
+            for index, row in files_df_train.iterrows():
+                if row["label"] in ["B", "C"]:
+                    j += 1
+                    continue
+                y[i] = y_train_np[j]
+                X[i] = X_train_np[j]
+                mask[j] = True
+                i += 1
+                j += 1
+            X_train_np = X[0:i]
+            y_train_np = y[0:i]
+            files_df_train = files_df_train[mask]
+            print(
+                f"There are ({(y_train_np == 0).sum()}, {(y_train_np == 1).sum()}) instances, {n - y_train_np.shape[0]} removed")
+
+
+        if args.smote:
+            print("in smote")
+            smote = SMOTE(random_state=42)
+            X_train_flat_np = X_train_np.reshape(X_train_np.shape[0], -1)
+            X_train_smote_flat, y_train_smote = smote.fit_resample(X_train_flat_np, y_train_np)
+            n_smote = y_train_smote.shape[0]
+            X_train_np, y_train_np = X_train_smote_flat.reshape(n_smote, 24, 60), y_train_smote
+
+
+        if args.aug:
+            augmenter = (AddNoise(scale=(0.01, 0.05), seed=args.seed)
+                         # + Dropout(p=args.data_dropout, fill=0.0, size=[1], seed=args.seed)
+                         # + Dropout(p=args.data_dropout, fill=0.0, size=[1, 2, 3, 4, 5], seed=args.seed)
+                         + Quantize(n_levels=256))
+            # %%
+            X_train_aug = augmenter.augment(np.transpose(X_train_np, (0, 2, 1)))
+            X_train_np = np.transpose(X_train_aug, (0, 2, 1))
+        # X_train_np, y_train_np = self.numpy_dataset(train_parts,
+        #                                             args.normalization_mode,
+        #                                             args,
+        #                                             args.train_k,
+        #                                             args.train_n,
+        #                                             train=True,
+        #                                             nan_mode=args.nan_mode,
+        #                                             binary=args.binary)
+        # if self.verbose:
+        #     self.print_stats("train", y_train_np, args.binary)
+        #
+        # if args.val_p is not None:
+        #     val_idx = self.np_rng.choice(int(len(X_train_np)),
+        #                                  int(len(X_train_np) * args.val_p),
+        #                                  replace=False)
+        #     val_mask = np.zeros(len(X_train_np), dtype=bool)
+        #     val_mask[val_idx] = True
+        #     X_val_np = deepcopy(X_train_np[val_mask])
+        #     y_val_np = deepcopy(y_train_np[val_mask])
+        #     X_train_np = X_train_np[~val_mask]
+        #     y_train_np = y_train_np[~val_mask]
+        # else:
+        #     X_val_np, y_val_np = None, None
+        #
+        # X_test_np, y_test_np = self.numpy_dataset([args.test_part],
+        #                                           args.normalization_mode,
+        #                                           args,
+        #                                           nan_mode=args.nan_mode,
+        #                                           binary=args.binary,
+        #                                           cache=args.cache)
+        # if self.verbose:
+        #     self.print_stats("test ", y_test_np, args.binary)
+
+        return X_train_np, y_train_np, X_val_np, y_val_np, X_test_np, y_test_np, files_df_train, files_df_val, None
 
     def numpy_dataset(self, parts, normalization_mode, args, k=None, n=None,
                       train=False, nan_mode=None, binary=True, cache=False):
         hash_dataset = f"{utils.hash_dataset(parts, k, n, nan_mode, binary)}"
         dataset_loc = os.path.join(args.data_dir, hash_dataset)
         if cache and hash_dataset in self.saved_datasets:
-            (X, y, norm_vals) = deepcopy(self.saved_datasets[hash_dataset])
+            (X, y, norm_vals) = self.saved_datasets[hash_dataset]
             if train:
                 self.normalizer = preprocess.Normalizer(vals=norm_vals)
-        elif cache and n is None and k is None and os.path.exists(f"{dataset_loc}.npz"):
+        elif cache and n is None and k is None and os.path.exists(
+                f"{dataset_loc}.npz"):  # this is for test set (necessary?) (definitely not necessary)
             with np.load(f"{dataset_loc}.npz") as np_data:
                 X = np_data['X']
                 y = np_data['y']
@@ -196,9 +321,8 @@ class Data:
             X, y = self.preprocess(X, y, normalization_mode, train)
             self.saved_datasets[hash_dataset] = (X, y, norm_vals)
         else:
-            files_df = split(self.all_files_df, partitions=parts, args=args, k=k, n=n,
-                             binary=binary)
-            # todo: here we got some near decision boundary.
+            files_df = split(self.all_files_df, partitions=parts, args=args,
+                             rng_state=self.pd_rng_state, k=k, n=n, binary=binary)
             X, y = read_instances(files_df, self.all_files_np, binary)
             X, y = preprocess.nan_to_num(X, y, nan_mode)
             self.normalizer.fit(X)
@@ -210,13 +334,28 @@ class Data:
                 self.saved_datasets[hash_dataset] = (X, y, norm_vals)
         return X, y
 
+    def load(self, args, parts, full=False):
+        hash_dataset = f"{utils.hash_dataset(parts, args.train_k, args.train_n, args.nan_mode, args.binary)}"
+        if args.cache and hash_dataset in self.saved_datasets:
+            (X, y, files_df) = self.saved_datasets[hash_dataset]
+        else:
+            files_df = split(self.all_files_df, partitions=parts, args=args,
+                             rng_state=self.pd_rng_state,
+                             k=args.train_k if not full else None,
+                             n=args.train_n if not full else None,
+                             binary=args.binary)
+            X, y = read_instances(files_df, self.all_files_np, args.binary)
+            if args.cache:
+                self.saved_datasets[hash_dataset] = (X, y, files_df)
+        return X, y, files_df
+
     def preprocess(self, X, y, normalization_mode, train=False):
         if train:
             self.normalizer = preprocess.Normalizer()
             X_norm = self.normalizer.fit_transform(X, normalization_mode)
         else:
             X_norm = self.normalizer.transform(X, normalization_mode)
-        p = np.random.permutation(len(X_norm))
+        p = self.np_rng.permutation(len(X_norm))
         X_norm, y = X_norm[p], y[p]
         return X_norm, y
 
@@ -229,7 +368,7 @@ class Data:
 
     @staticmethod
     def dataholders(args, X_train_np, y_train_np, X_val_np, y_val_np,
-                    X_test_np, y_test_np, test=False):
+                    X_test_np, y_test_np, train_df, val_df, test_df, test=False):
         X_train = torch.tensor(X_train_np, dtype=torch.float32, device=args.device)
         y_train = torch.tensor(y_train_np, dtype=torch.long, device=args.device)
         if args.batch_size is None or args.batch_size == 0.0:
@@ -251,6 +390,19 @@ class Data:
 
         test = [utils.DataPair(X_test[i], y_test[i]) for i in range(len(X_test))]
         return train, val, test
+
+    @staticmethod
+    def select_indices(train, val, test, args):
+        selected_indices = args.ordering[:args.n_features]
+        train.dataset.X = train.dataset.X[:, selected_indices, :]
+
+        val[0] = utils.DataPair(val[0].X[:, selected_indices, :], val[0].y)
+
+        for i in range(len(test)):
+            test[i] = utils.DataPair(test[i].X[:, selected_indices, :], test[i].y)
+
+        return train, val, test
+
 
 
 def create_partition_files_df(partition_dir, files_df_path=None):
@@ -322,16 +474,39 @@ def choose_from_active_regions(files_df, k):
                                                replace=False).index)
     return files_df.loc[indices]
 
+def nonuniform_sample(files_df, k):
+    indices = []
+    active_regions = files_df.active_region.unique()
+    I = dict()
+    I_hat = dict()
+    for active_region in active_regions:
+        I[active_region] = files_df[files_df.active_region == active_region]
+        I_hat[active_region] = pd.DataFrame({}, columns=files_df.columns)
 
-def split(files_df, partitions, args, k=None, n=None, binary=True):
+    for i in range(k):
+        U = np.zeros(len(active_regions))
+        for active_region in active_regions:
+            U[active_region] = len(I[active_region]) / (len(I_hat[active_region]) + 1)
+        U = U / np.sum(U)
+        ar = np.random.choice(active_regions, 1, p=U)
+        entry = I[ar].sample(n=1, replace=False)
+        indices.extend(entry.index)
+        entry = I[ar].loc[I[ar]]
+        I_hat[ar] = pd.concat([I_hat[ar], entry])
+        I[ar] = I[ar].drop([entry.index])
+
+    return files_df.loc[indices]
+
+
+def split(files_df, partitions, args, rng_state, k=None, n=None, binary=True):
     if binary:
         bcq = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
                              f" and (label == ['B', 'C', 'Q'])")
         mx = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
                             f" and (label == ['M', 'X'])")
         if n is not None:
-            bcq = bcq.sample(n=min(n[0], len(bcq)), replace=False)
-            mx = mx.sample(n=min(n[1], len(mx)), replace=False)
+            bcq = bcq.sample(n=min(n[0], len(bcq)), replace=False, random_state=rng_state)
+            mx = mx.sample(n=min(n[1], len(mx)), replace=False, random_state=rng_state)
         elif k is not None:
             bcq = choose_from_active_regions(bcq, k=k[0])
             mx = choose_from_active_regions(mx, k=k[1])
@@ -346,10 +521,10 @@ def split(files_df, partitions, args, k=None, n=None, binary=True):
         x = files_df.query(f"(partition == {[f'partition{i}' for i in partitions]})"
                            f" and (label == ['X'])")
         if n is not None:
-            q = q.sample(n=min(n[0], len(q)), replace=False)
-            bc = bc.sample(n=min(n[1], len(bc)), replace=False)
-            m = m.sample(n=min(n[2], len(m)), replace=False)
-            x = x.sample(n=min(n[3], len(x)), replace=False)
+            q = q.sample(n=min(n[0], len(q)), replace=False, random_state=rng_state)
+            bc = bc.sample(n=min(n[1], len(bc)), replace=False, random_state=rng_state)
+            m = m.sample(n=min(n[2], len(m)), replace=False, random_state=rng_state)
+            x = x.sample(n=min(n[3], len(x)), replace=False, random_state=rng_state)
         elif k is not None:
             q = choose_from_active_regions(q, k=k[0])
             bc = choose_from_active_regions(bc, k=k[1])

@@ -25,7 +25,7 @@ class Algorithm:
     def train(self, early_stop=5):
         epoch, early_stop_cnt = 0, 0
         train_metric = Metric()
-        best_f1 = 0.0
+        best_tss = 0.0
         while early_stop_cnt <= early_stop and epoch <= self.args.stop:
             epoch_start_time = time.time()
             self.reporter.epoch.header(self.args, epoch, early_stop_cnt)
@@ -39,15 +39,15 @@ class Algorithm:
                 if self.reporter is not None:
                     self.reporter.update(self.args, epoch_loss, metric)
                 if phase == "val":
-                    if best_f1 <= np.average(train_metric.f1):
+                    if best_tss <= metric.tss:
                         early_stop_cnt = -1
-                        best_f1 = np.average(train_metric.f1)
+                        best_tss = metric.tss
                         self.best_val_run_metric = deepcopy(metric)
                         self.best_model_wts = deepcopy(self.model.state_dict())
                     else:
                         early_stop_cnt += 1
                     self.reporter.epoch.val(self.args, epoch_loss, metric,
-                                            postfix="improved" if early_stop_cnt == -1 else None)
+                                            postfix=" improved" if early_stop_cnt == -1 else None)
                 else:
                     train_metric = deepcopy(metric)
                     self.reporter.epoch.train(self.args, epoch_loss, metric)

@@ -13,7 +13,7 @@ text_blue = "\33[34m"
 text_negative = "\33[7m"
 
 
-def save_report(loc, df, incremental):
+def save_report(loc, df, incremental=True):
     if incremental and os.path.exists(loc):
         pre_report_df = pd.read_csv(loc)
         pd.concat([pre_report_df, df]).round(decimals=4).to_csv(loc, index=False)
@@ -73,10 +73,10 @@ class BaselineReporter:
         self.metric = None
         self.split_report_df = pd.DataFrame(
             columns=["run no.", "test_part", "train_k", "train_n", "nan_mode",
-                     "normalization", "test_run"])
+                     "normalization", "ndbsr", "smote", "augmentation", "test_run"])
         self.model_report_df = pd.DataFrame(
             columns=["run no.", "train_k", "train_n", "nan_mode",
-                     "normalization", "all_test_runs"])
+                     "normalization", "ndbsr", "smote", "augmentation", "all_test_runs"])
 
     def model_row(self, args, metric):
         if args.verbose < 0: return
@@ -86,6 +86,9 @@ class BaselineReporter:
             args.train_n,
             args.nan_mode,
             args.normalization_mode,
+            args.ndbsr,
+            args.smote,
+            args.aug,
             metric]
 
     def split_row(self, args, metric):
@@ -97,6 +100,9 @@ class BaselineReporter:
             args.train_n,
             args.nan_mode,
             args.normalization_mode,
+            args.ndbsr,
+            args.smote,
+            args.aug,
             metric]
 
     def save_split_report(self, args, incremental=True):
@@ -118,20 +124,21 @@ class Reporter:
         self.report_df = None
         self.split_report_df = pd.DataFrame(
             columns=["id", "model id", "run no.", "val_part", "test_part",
-                     "batch_size",
+                     "batch_size", "ndbsr", "smote", "augmentation",
                      "train_k", "train_n", "ch_conv", "l_hidden", "dropout",
                      "nan_mode", "class_importance", "lr", "best_val_run",
-                     "test_run"])
+                     "test_run", "n_features"])
         self.model_report_df = pd.DataFrame(
-            columns=["id", "run no.", "batch_size", "train_k", "train_n",
+            columns=["id", "run no.", "batch_size", "ndbsr", "smote", "augmentation",
+                     "train_k", "train_n",
                      "ch_conv", "l_hidden", "dropout", "nan_mode",
                      "class_importance", "lr", "rand_seed", "np_seed", "torch_seed",
                      "all_best_val_runs",
-                     "all_test_runs"])
+                     "all_test_runs", "n_features"])
         self.config_report_df = pd.DataFrame(
             columns=["stop", "batch_size", "n", "filter", "depth", "hidden",
                      "pooling", "dropout", "nan", "importance", "lr", "seed", "tss",
-                     "hss2", "acc", "prec", "rec", "f1"]
+                     "hss2", "acc", "prec", "rec", "f1", "n_features"]
         )
         self.experiment = Reporter.ExperimentReporter()
         self.config = Reporter.ConfigReporter()
@@ -144,6 +151,9 @@ class Reporter:
             utils.hash_model(args),
             args.run_no,
             args.batch_size,
+            args.ndbsr,
+            args.smote,
+            args.aug,
             args.train_k,
             args.train_n,
             [args.depth[0], args.depth[1], args.depth[2]],
@@ -156,7 +166,8 @@ class Reporter:
             args.seed,
             args.seed,
             val_metric,
-            test_metric]
+            test_metric,
+            args.n_features]
 
     def split_row(self, args, best_val_metric, test_metric):
         self.split_report_df.loc[len(self.split_report_df.index)] = [
@@ -166,6 +177,9 @@ class Reporter:
             args.val_part if args.val_part is not None else args.val_p,
             args.test_part,
             args.batch_size,
+            args.ndbsr,
+            args.smote,
+            args.aug,
             args.train_k,
             args.train_n,
             [args.depth[0], args.depth[1], args.depth[2]],
@@ -175,7 +189,8 @@ class Reporter:
             args.class_importance,
             args.lr,
             best_val_metric,
-            test_metric]
+            test_metric,
+            args.n_features]
 
     def config_row(self, args, metrics):
         def stats(metrics):
@@ -206,6 +221,7 @@ class Reporter:
             "(" + ", ".join(f"{x:.4f}" for x in prec) + ")",
             "(" + ", ".join(f"{x:.4f}" for x in rec) + ")",
             "(" + ", ".join(f"{x:.4f}" for x in f1) + ")",
+            args.n_features
         ]
 
     def save_config_report(self, args, incremental=False):

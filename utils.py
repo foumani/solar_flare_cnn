@@ -18,6 +18,7 @@ def reset_seeds(args):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
+
 def arg_parse(manual=None):
     parser = common_arg_parse(manual)
     parser.add_argument("--learning_rate", dest="lr", default=0.01, type=float,
@@ -31,6 +32,7 @@ def arg_parse(manual=None):
                         help="Batch size for training.")
     parser.add_argument("--draw", dest="draw", action="store_true",
                         help="Draw a t-SNE visualization of the model's last layer.")
+    parser.add_argument("--smote", dest="smote", action="store_true", default=False)
     parser.add_argument("--valp", dest="val_p", default=0.4, required=False,
                         type=float,
                         help="Fraction of data to dedicate to validation.")
@@ -45,6 +47,8 @@ def arg_parse(manual=None):
                         help="Disable binary classification to run multi-class classification (currently not supported).")
     parser.add_argument("--ndbsr", dest="ndbsr", action="store_true",
                         help="Enable Near Decision Boundary Sample Removal.")
+    parser.add_argument("--aug", dest="aug", action="store_true",
+                        help="Enable augmentation for the data.")
     parser.add_argument('--runs', dest='runs', default=1, type=int,
                         help='Number of times to run the model (default: 1).')
     parser.add_argument("--datadir", dest="data_dir", required=True,
@@ -89,6 +93,8 @@ def arg_parse(manual=None):
                         required=False,
                         type=int,
                         help="Size of the pooling layer.")
+    parser.add_argument("--features", dest="n_features", default=24, required=False,
+                        type=int)
     parser.add_argument("--nan", dest="nan_mode", default=None, required=False,
                         help="How to handle NAN numbers in data, if not given does nothing. options: 0, avg")
     parser.add_argument("--norm", dest="normalization_mode", default=None, required=False,
@@ -108,6 +114,10 @@ def arg_parse(manual=None):
                         required=False)
     parser.add_argument("--configreport", dest="config_report_filename",
                         default="configs.csv", required=False)
+    parser.add_argument("--resultfilename", dest="results_filename", required=True,
+                        help="Filename to save the results in.")
+    parser.add_argument("--resultdir", dest="results_dir", default="experiments_plot",
+                        help="Directory to save the results in.")
     args = parser.parse_args()
 
     initialize(args)
@@ -161,15 +171,13 @@ def initialize(args):
             args.nan_mode = 0
         elif args.nan_mode == "avg":
             pass
-        else:
-            sys.exit("options for --nan: not given, 0, avg")
+        elif args.nan_mode == "none":
+            args.nan_mode = None
     if args.normalization_mode is not None:
         if args.normalization_mode == "scale":
             args.normalization_mode = Normalizer.scale
         elif args.normalization_mode == "zscore":
             args.normalization_mode = Normalizer.z_score
-        else:
-            sys.exit("options for --norm: not given, scale, zscore")
     args.ablation = False
     args.saved_seed = args.seed
     args.saliency = False
@@ -254,6 +262,24 @@ def hash_model(args):
 
 def possible_labels(binary):
     return np.array([0, 1]) if binary else np.array([0, 1, 2, 3])
+
+
+def add_results(args, metrics):
+    NUM_CLASSES = 2  # we do only binary here
+    NUM_RUNS_PER_EXPERIMENT = args.runs
+    new_results = np.empty((0, NUM_CLASSES, NUM_CLASSES))
+    for metric in metrics:
+        print(metric.cm)
+        print(metric.cm.shape)
+        new_results = np.append(new_results, np.array([metric.cm]), axis=0)
+    print(new_results.shape)
+    print(new_results)
+    if os.path.exists(os.path.join(args.results_dir, f"{args.results_filename}.npy")):
+        results = np.load(f"./{args.results_dir}/{args.results_filename}.npy")
+    else:
+        results = np.empty((0, NUM_RUNS_PER_EXPERIMENT, NUM_CLASSES, NUM_CLASSES))
+    results = np.append(results, np.array([new_results]), axis=0)
+    np.save(f"./{args.results_dir}/{args.results_filename}.npy", results)
 
 
 class Metric:

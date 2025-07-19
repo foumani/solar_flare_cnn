@@ -5,15 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6c5bcd17-3344-4f10-b472-d717b3ba9557" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ablation_plotting.ipynb" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/algorithm.py" beforeDir="false" afterPath="$PROJECT_DIR$/algorithm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/baseline_plotting.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/baseline_plotting.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/baseline_plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/baseline_plotting.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/baselines.py" beforeDir="false" afterPath="$PROJECT_DIR$/baselines.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conv_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/conv_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data.ipynb" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/different_sizes.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist_ar_freq.eps" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance_removal.eps" beforeDir="false" afterPath="$PROJECT_DIR$/instance_removal.eps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/preprocess.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reporter.py" beforeDir="false" afterPath="$PROJECT_DIR$/reporter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saliency.npy" beforeDir="false" afterPath="$PROJECT_DIR$/saliency.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tuning_plotting.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/tuning_plotting.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
@@ -26,8 +34,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="Jupyter Notebook" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -45,47 +53,57 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.ablation.executor&quot;: &quot;Run&quot;,
-    &quot;Python.best config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cif.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cnn.executor&quot;: &quot;Run&quot;,
-    &quot;Python.experiments.executor&quot;: &quot;Run&quot;,
-    &quot;Python.feature importance.executor&quot;: &quot;Run&quot;,
-    &quot;Python.largest config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.local.executor&quot;: &quot;Run&quot;,
-    &quot;Python.lstm.executor&quot;: &quot;Run&quot;,
-    &quot;Python.minirocket search.executor&quot;: &quot;Run&quot;,
-    &quot;Python.minirocket.executor&quot;: &quot;Run&quot;,
-    &quot;Python.model.executor&quot;: &quot;Run&quot;,
-    &quot;Python.plots.executor&quot;: &quot;Run&quot;,
-    &quot;Python.search.executor&quot;: &quot;Run&quot;,
-    &quot;Python.single.executor&quot;: &quot;Run&quot;,
-    &quot;Python.single_train.executor&quot;: &quot;Run&quot;,
-    &quot;Python.solare_flare_plots.executor&quot;: &quot;Run&quot;,
-    &quot;Python.svm.executor&quot;: &quot;Run&quot;,
-    &quot;Python.train.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
-    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/workspace/solar_flare_prediction/solar_flare_cnn/plots&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;Jupyter Settings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.MACNN search.executor": "Run",
+    "Python.ablation.executor": "Debug",
+    "Python.best config.executor": "Debug",
+    "Python.cif.executor": "Run",
+    "Python.cnn.executor": "Run",
+    "Python.contreg.executor": "Run",
+    "Python.data.executor": "Run",
+    "Python.experiments.executor": "Run",
+    "Python.feature importance.executor": "Run",
+    "Python.feature_selection.executor": "Run",
+    "Python.largest config.executor": "Run",
+    "Python.local.executor": "Run",
+    "Python.lstm.executor": "Run",
+    "Python.macnn.executor": "Run",
+    "Python.minirocket search.executor": "Run",
+    "Python.minirocket.executor": "Run",
+    "Python.model.executor": "Run",
+    "Python.no preprocessing.executor": "Debug",
+    "Python.orion search.executor": "Run",
+    "Python.plots.executor": "Run",
+    "Python.search.executor": "Run",
+    "Python.single.executor": "Run",
+    "Python.single_train.executor": "Run",
+    "Python.solare_flare_plots.executor": "Run",
+    "Python.svm.executor": "Run",
+    "Python.testin.executor": "Run",
+    "Python.train.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowPanel.toolwindow.highlight.mappings": "true",
+    "WebServerToolWindowPanel.toolwindow.highlight.symlinks": "true",
+    "WebServerToolWindowPanel.toolwindow.show.date": "false",
+    "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
+    "WebServerToolWindowPanel.toolwindow.show.size": "false",
+    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "D:/workspace/solar_flare_prediction/solar_flare_cnn",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.intellij.jupyter.py.connections.configurable.JupyterServersConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
       <console-settings module-name="solar_flare_cnn" is-module-sdk="true">
@@ -98,8 +116,35 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\workspace\solar_flare_prediction\solar_flare_cnn\plots" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\workspace\solar_flare_prediction\solar_flare_cnn" />
+    </key>
   </component>
-  <component name="RunManager" selected="Python.model">
+  <component name="RunManager" selected="Python.ablation">
+    <configuration name="MACNN search" type="PythonConfigurationType" factoryName="Python">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Remote Python 3.11.7 (sftp://arash@dsa.cs.usu.edu:22/home/arash/.virtualenvs/solar_flare_cnn/bin/python)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/baselines.py" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --search 100 --experiment macnn --runs 1 --resultdir experiments_plot5 --resultfilename macnntry --splitreport baseline_macnntry_split.csv --modelreport baseline_macnntry_model.csv --configreport baseline_macnntry_config.csv --ndbsr --smote --aug" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="ablation" type="PythonConfigurationType" factoryName="Python" singleton="false">
       <module name="solar_flare_cnn" />
       <option name="ENV_FILES" value="" />
@@ -115,7 +160,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 2 --runs 5 --experiment ablation --earlystop 50 --stop 1000 --verbose 3 --seed 42 --splitreport ablation_split.csv --modelreport ablation_model.csv --configreport ablation_config.csv --cache" />
+      <option name="PARAMETERS" value="--datadir /media/EXTHDD/arash/data/solar_flare --logdir log5 --gpu 0 --runs 5 --experiment ablation --earlystop 40 --stop 200 --verbose 3 --seed 43 --splitreport ablation_split.csv --modelreport ablation_model.csv --configreport ablation_config.csv --cache --resultfilename full_ablation --resultdir experiments_plot5 --aug --ndbsr --smote" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -162,7 +207,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --seed 42 --experiment cif --runs 5" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --seed 42 --experiment cif --runs 5 --verbose 5 --resultdir experiments_plot5 --resultfilename cif --splitreport baseline_cif_split_optimal.csv --modelreport baseline_cif_model_optimal.csv --configreport baseline_cif_config_optimal.csv --smote --ndbsr --aug" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -186,7 +231,54 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --seed 42 --experiment cnn --runs 5" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --seed 42 --experiment cnn --runs 5 --verbose 5 --resultdir experiments_plot5 --resultfilename cnn --splitreport baseline_cnn_split_optimal.csv --modelreport baseline_cnn_model_optimal.csv --configreport baseline_cnn_config_optimal.csv --smote --ndbsr --aug" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="contreg" type="PythonConfigurationType" factoryName="Python">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Remote Python 3.11.7 (sftp://arash@dsa.cs.usu.edu:22/home/arash/.virtualenvs/solar_flare_cnn/bin/python)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --seed 42 --experiment contreg --search 1 --runs 5 --ndbsr --aug --resultdir experiments_plot5 --resultfilename contreg --splitreport baseline_contreg_split_optimal.csv --modelreport baseline_contreg_model_optimal.csv --configreport baseline_contreg_config_optimal.csv" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data.py" />
+      <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -209,7 +301,30 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 1 --experiment saliency --stop 1000 --early 50 --verbose 3 --splitreport saliency_split.csv --modelreport saliency_model.csv --cache --configreport saliency_config.csv" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --gpu 3 --runs 1 --experiment saliency --stop 200 --early 50 --seed 42 --verbose 3 --splitreport saliency_split.csv --modelreport saliency_model.csv --cache --configreport saliency_config.csv --resultfilename full_saliency --resultdir experiments_plot5 --aug --ndbsr --smote --cache" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="feature_selection" type="PythonConfigurationType" factoryName="Python" singleton="false">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --gpu 1 --runs 5 --experiment feature_selection --depth 2,4,8 --kernelsize 9,9,9 --nan local_avg --batch 64 --norm scale --poolingsize 2 --poolingstrat max --hidden 128,32 --n 6500,1000 --valp 0.5 --importance 0.5,0.5 --datadrop 0.0 --layerdrop 0.3 --seed 43 --earlystop 40 --stop 200 --verbose 3 --splitreport feature_selection_split.csv --modelreport feature_selection_model.csv --configreport feature_selection_config.csv --resultfilename feature_selection --resultdir experiments_plot5 --aug --ndbsr --smote --cache" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -232,7 +347,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 1 --runs 1 --experiment model --depth 32,64,128 --kernelsize 9,9,9 --nan 0 --batch 1024 --norm scale --poolingsize 5 --poolingstrat max --hidden 64,32 --n 5000,3500 --nan 0 --valp 0.8 --importance 0.4,0.6 --datadrop 0.3 --layerdrop 0.3 --seed 42 --earlystop 15 --stop 100 --verbose 5 --splitreport largest_split.csv --modelreport largest_model.csv --configreport largest_config.csv --cache" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 1 --experiment model --depth 32,64,128 --kernelsize 9,9,9 --nan 0 --batch 1024 --norm scale --poolingsize 5 --poolingstrat max --hidden 64,32 --n 5000,3500 --nan 0 --valp 0.8 --importance 0.4,0.6 --datadrop 0.3 --layerdrop 0.3 --seed 42 --earlystop 50 --stop 200 --verbose 5 --splitreport largest_split.csv --modelreport largest_model.csv --configreport largest_config.csv --cache --ndbsr" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -255,7 +370,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 5 --experiment local --stop 1000 --early 50 --verbose 3 --cache --splitreport local_split.csv --modelreport local_model.csv --configreport local_config.csv" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --gpu 3 --runs 5 --experiment local --stop 200 --early 40 --verbose 3 --cache --splitreport local_split.csv --modelreport local_model.csv --configreport local_config.csv --seed 45 --resultfilename full_local --resultdir experiments_plot5 --aug --ndbsr --smote --cache" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -279,7 +394,31 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --seed 42 --experiment lstm --runs 5" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --seed 42 --experiment lstm --runs 5 --verbose 5 --resultdir experiments_plot5 --resultfilename lstm --splitreport baseline_lstm_split_optimal.csv --modelreport baseline_lstm_model_optimal.csv --configreport baseline_lstm_config_optimal.csv --smote --ndbsr --aug" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="macnn" type="PythonConfigurationType" factoryName="Python">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Remote Python 3.11.7 (sftp://arash@dsa.cs.usu.edu:22/home/arash/.virtualenvs/solar_flare_cnn/bin/python)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --seed 42 --experiment macnn --runs 10 --verbose 5 --resultdir experiments_plot5 --resultfilename lstm --splitreport baseline_macnn_split_optimal.csv --modelreport baseline_macnn_model_optimal.csv --configreport baseline_mcnn_config_optimal.csv --smote --ndbsr --aug" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -303,7 +442,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/baselines.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --search 50 --experiment minirocket --runs 1" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --search 100 --experiment minirocket --runs 1 --modelreport model_minirocket.csv --configreport config_minirocket.csv --splitreport split_minirocket.csv --resultdir experiments_plot5 --resultfilename minirocket --ndbsr --smote --aug" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -327,7 +466,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --seed 42 --experiment minirocket --runs 5" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --seed 42 --experiment minirocket --runs 5 --verbose 5 --resultdir experiments_plot5 --resultfilename minirocket --splitreport baseline_minirocket_split_optimal.csv --modelreport baseline_minirocket_model_optimal.csv --configreport baseline_minirocket_config_optimal.csv --smote --ndbsr --aug" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -350,7 +489,53 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 1 --experiment model --depth 16,32,64 --kernelsize 7,7,5 --nan 0 --batch 1024 --norm scale --poolingsize 4 --poolingstrat max --hidden 64,32 --n 5500,3500 --nan 0 --valp 0.5 --importance 0.4,0.6 --datadrop 0.4 --layerdrop 0.3 --seed 42 --earlystop 50 --stop 100 --verbose 5 --modelreport largest.csv --configreport largest_config.csv --cache" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --gpu 2 --runs 5 --experiment model --depth 2,4,8 --kernelsize 9,9,9 --batch 64 --norm scale --poolingsize 2 --poolingstrat max --hidden 128,32 --n 6500,1000 --nan local_avg --valp 0.5 --importance 0.5,0.5 --datadrop 0.0 --layerdrop 0.3 --seed 43 --earlystop 40 --stop 200 --verbose 5 --splitreport split.csv --modelreport model.csv --configreport config.csv --cache --ndbsr --smote --aug --resultdir experiments_plot5 --resultfilename model_run" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="no preprocessing" type="PythonConfigurationType" factoryName="Python" singleton="false">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --gpu 2 --runs 5 --experiment no_preprocessing --depth 2,4,8 --kernelsize 9,9,9 --batch 64 --norm scale --poolingsize 2 --poolingstrat max --hidden 128,32 --n 6500,1000 --nan local_avg --valp 0.5 --importance 0.5,0.5 --datadrop 0.0 --layerdrop 0.3 --seed 43 --earlystop 40 --stop 200 --verbose 5 --splitreport split.csv --modelreport model.csv --configreport config.csv --cache --ndbsr --smote --aug --resultdir experiments_plot5 --resultfilename model_run" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="orion search" type="PythonConfigurationType" factoryName="Python" singleton="false">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --gpu 3 --runs 5 --experiment orion_search --batch 64 --valp 0.5 --seed 42 --earlystop 40 --stop 200 --verbose 3 --search 100 --modelreport orion_search_model.csv --configreport orion_search_config.csv --splitreport orion_search_split.csv --resultfilename orion_searching --resultdir experiments_plot5 --aug --ndbsr --smote --cache" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -373,7 +558,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 3 --runs 5 --experiment plot --stop 1000 --early 50 --verbose 3 --cache --splitreport local_split.csv --modelreport local_model.csv --configreport local_config.csv" />
+      <option name="PARAMETERS" value="--datadir /media/EXTHDD/arash/data/solar_flare --logdir log --gpu 3 --runs 5 --experiment plot --stop 1000 --early 50 --verbose 3 --cache --resultdir experiments_plot5 --resultfilename lstm --splitreport baseline_lstm_split_optimal.csv --modelreport baseline_lstm_model_optimal.csv --configreport baseline_lstm_config_optimal.csv" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -396,7 +581,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --gpu 0 --runs 5 --experiment search --batch 1024 --valp 0.5 --seed 42 --earlystop 50 --stop 1000 --verbose 3 --modelreport search_model.csv --configreport search_config.csv --splitreport search_split.csv" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --gpu 3 --runs 5 --experiment search --batch 64 --valp 0.5 --seed 42 --earlystop 40 --stop 200 --verbose 3 --search 100 --modelreport search_model.csv --configreport search_config.csv --splitreport search_split.csv --resultfilename searching --resultdir experiments_plot5 --aug --ndbsr --smote --cache" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -443,7 +628,30 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log --seed 42 --experiment svm --runs 5" />
+      <option name="PARAMETERS" value="--datadir /mnt/sda1/arash/data/solar_flare --logdir log5 --seed 42 --experiment svm --runs 5 --verbose 5 --smote --ndbsr --aug --resultdir experiments_plot5 --resultfilename svm --splitreport baseline_svm_split_optimal.csv --modelreport baseline_svm_model_optimal.csv --configreport baseline_svm_config_optimal.csv" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="testin" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="solar_flare_cnn" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/testin.py" />
+      <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -454,31 +662,41 @@
     <list>
       <item itemvalue="Python.ablation" />
       <item itemvalue="Python.best config" />
+      <item itemvalue="Python.feature_selection" />
       <item itemvalue="Python.cif" />
       <item itemvalue="Python.cnn" />
       <item itemvalue="Python.feature importance" />
       <item itemvalue="Python.largest config" />
       <item itemvalue="Python.local" />
-      <item itemvalue="Python.plots" />
       <item itemvalue="Python.lstm" />
+      <item itemvalue="Python.macnn" />
       <item itemvalue="Python.minirocket search" />
+      <item itemvalue="Python.MACNN search" />
       <item itemvalue="Python.minirocket" />
       <item itemvalue="Python.model" />
+      <item itemvalue="Python.no preprocessing" />
+      <item itemvalue="Python.plots" />
       <item itemvalue="Python.search" />
+      <item itemvalue="Python.orion search" />
       <item itemvalue="Python.svm" />
+      <item itemvalue="Python.contreg" />
+      <item itemvalue="Python.testin" />
+      <item itemvalue="Python.data" />
       <item itemvalue="Python.solare_flare_plots" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.solare_flare_plots" />
+        <item itemvalue="Python.testin" />
+        <item itemvalue="Python.data" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.19072.16" />
-        <option value="bundled-python-sdk-8336bb23522e-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.19072.16" />
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-PY-251.26927.74" />
+        <option value="bundled-python-sdk-657d8234b839-64d779b69b7a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26927.74" />
       </set>
     </attachedChunks>
   </component>
@@ -552,7 +770,75 @@
       <workItem from="1742955486276" duration="1245000" />
       <workItem from="1743000122290" duration="10472000" />
       <workItem from="1743452677402" duration="1200000" />
-      <workItem from="1743537807001" duration="9079000" />
+      <workItem from="1743537807001" duration="18562000" />
+      <workItem from="1743606593190" duration="607000" />
+      <workItem from="1743629090555" duration="2744000" />
+      <workItem from="1743640848898" duration="686000" />
+      <workItem from="1743709921290" duration="2985000" />
+      <workItem from="1743793578252" duration="604000" />
+      <workItem from="1744150392464" duration="16204000" />
+      <workItem from="1744176368986" duration="6407000" />
+      <workItem from="1744212508690" duration="10715000" />
+      <workItem from="1744423765965" duration="37000" />
+      <workItem from="1744429434700" duration="18000" />
+      <workItem from="1744780800775" duration="8728000" />
+      <workItem from="1744793848460" duration="9618000" />
+      <workItem from="1744816471113" duration="8152000" />
+      <workItem from="1744824669178" duration="9290000" />
+      <workItem from="1744913307791" duration="1755000" />
+      <workItem from="1744952634050" duration="422000" />
+      <workItem from="1745026270638" duration="3133000" />
+      <workItem from="1745082986441" duration="154000" />
+      <workItem from="1745181140224" duration="1955000" />
+      <workItem from="1745194827841" duration="1333000" />
+      <workItem from="1745244347935" duration="10324000" />
+      <workItem from="1745356289943" duration="7402000" />
+      <workItem from="1745426413531" duration="13268000" />
+      <workItem from="1745463271962" duration="69000" />
+      <workItem from="1745463350175" duration="1229000" />
+      <workItem from="1745511850226" duration="2917000" />
+      <workItem from="1745527923069" duration="674000" />
+      <workItem from="1745590657062" duration="1584000" />
+      <workItem from="1745595647588" duration="1120000" />
+      <workItem from="1745608441577" duration="2089000" />
+      <workItem from="1745611515025" duration="1570000" />
+      <workItem from="1745713300164" duration="595000" />
+      <workItem from="1745785120207" duration="8896000" />
+      <workItem from="1745856891707" duration="4511000" />
+      <workItem from="1745873530274" duration="9458000" />
+      <workItem from="1745885383173" duration="14706000" />
+      <workItem from="1745905434252" duration="25598000" />
+      <workItem from="1745975388258" duration="995000" />
+      <workItem from="1746092279931" duration="1550000" />
+      <workItem from="1747242853337" duration="106000" />
+      <workItem from="1747250036006" duration="2615000" />
+      <workItem from="1747272499627" duration="1345000" />
+      <workItem from="1747333288926" duration="610000" />
+      <workItem from="1747361606791" duration="631000" />
+      <workItem from="1747501880091" duration="1382000" />
+      <workItem from="1747688838069" duration="2911000" />
+      <workItem from="1747815067725" duration="13188000" />
+      <workItem from="1747949943921" duration="9412000" />
+      <workItem from="1748014381250" duration="134000" />
+      <workItem from="1748014944173" duration="6791000" />
+      <workItem from="1748373098907" duration="3006000" />
+      <workItem from="1748383852922" duration="345000" />
+      <workItem from="1748426105962" duration="278000" />
+      <workItem from="1748455437851" duration="2198000" />
+      <workItem from="1748628150747" duration="595000" />
+      <workItem from="1749054857296" duration="30000" />
+      <workItem from="1749055004972" duration="2656000" />
+      <workItem from="1749227032299" duration="6454000" />
+      <workItem from="1750456457361" duration="2266000" />
+      <workItem from="1750800976846" duration="1645000" />
+      <workItem from="1750806728037" duration="6548000" />
+      <workItem from="1750962558232" duration="6175000" />
+      <workItem from="1751034189244" duration="2934000" />
+      <workItem from="1752078329085" duration="3242000" />
+      <workItem from="1752084045855" duration="2276000" />
+      <workItem from="1752184795759" duration="1364000" />
+      <workItem from="1752863553174" duration="4156000" />
+      <workItem from="1752961892746" duration="1122000" />
     </task>
     <servers />
   </component>
@@ -571,32 +857,49 @@
     </option>
   </component>
   <component name="XDebuggerManager">
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="pd.concat([pre_report_df, df]).round(decimals=4)" language="Python" />
-      </configuration>
-    </watches-manager>
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/baselines.py</url>
+          <line>72</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/train.py</url>
+          <line>44</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$ablation.coverage" NAME="ablation Coverage Results" MODIFIED="1740591637772" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$train.coverage" NAME="search Coverage Results" MODIFIED="1739164154981" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$plots.coverage" NAME="plots Coverage Results" MODIFIED="1743014985062" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$svm.coverage" NAME="svm Coverage Results" MODIFIED="1741198160214" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$experiments.coverage" NAME="experiments Coverage Results" MODIFIED="1738892548024" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$largest_config.coverage" NAME="largest config Coverage Results" MODIFIED="1739307000108" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$lstm.coverage" NAME="lstm Coverage Results" MODIFIED="1741207199276" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$MACNN_search.coverage" NAME="MACNN search Coverage Results" MODIFIED="1748455477170" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$data.coverage" NAME="data Coverage Results" MODIFIED="1745975518193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$single_train.coverage" NAME="single_train Coverage Results" MODIFIED="1739208655662" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$minirocket_search.coverage" NAME="minirocket search Coverage Results" MODIFIED="1740703951410" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$local.coverage" NAME="local Coverage Results" MODIFIED="1739316245240" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$solare_flare_plots.coverage" NAME="solare_flare_plots Coverage Results" MODIFIED="1739926263790" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/plots" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$search.coverage" NAME="search Coverage Results" MODIFIED="1741058475357" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$feature_importance.coverage" NAME="feature importance Coverage Results" MODIFIED="1741023358521" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$best_config.coverage" NAME="best config Coverage Results" MODIFIED="1739605453424" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$cnn.coverage" NAME="cnn Coverage Results" MODIFIED="1741197388755" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$minirocket.coverage" NAME="minirocket Coverage Results" MODIFIED="1741207227487" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$no_preprocessing.coverage" NAME="no preprocessing Coverage Results" MODIFIED="1749247753767" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$plots.coverage" NAME="plots Coverage Results" MODIFIED="1752083787656" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$minirocket.coverage" NAME="minirocket Coverage Results" MODIFIED="1745930613442" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$single.coverage" NAME="model Coverage Results" MODIFIED="1739168219361" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$model.coverage" NAME="model Coverage Results" MODIFIED="1743538785254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$largest_config.coverage" NAME="largest config Coverage Results" MODIFIED="1744153011309" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$search.coverage" NAME="search Coverage Results" MODIFIED="1745916366074" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$cnn.coverage" NAME="cnn Coverage Results" MODIFIED="1745929754037" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$local.coverage" NAME="local Coverage Results" MODIFIED="1745922279032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$experiments.coverage" NAME="experiments Coverage Results" MODIFIED="1738892548024" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$cif.coverage" NAME="cif Coverage Results" MODIFIED="1745932750970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$ablation.coverage" NAME="ablation Coverage Results" MODIFIED="1752962915107" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$best_config.coverage" NAME="best config Coverage Results" MODIFIED="1744167878162" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$train.coverage" NAME="search Coverage Results" MODIFIED="1739164154981" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$macnn.coverage" NAME="macnn Coverage Results" MODIFIED="1749055179729" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$minirocket_search.coverage" NAME="minirocket search Coverage Results" MODIFIED="1745886036670" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$lstm.coverage" NAME="lstm Coverage Results" MODIFIED="1745929294488" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$feature_importance.coverage" NAME="feature importance Coverage Results" MODIFIED="1741023358521" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$contreg.coverage" NAME="contreg Coverage Results" MODIFIED="1745926418964" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$svm.coverage" NAME="svm Coverage Results" MODIFIED="1745927714343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$orion_search.coverage" NAME="orion search Coverage Results" MODIFIED="1750968889738" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$solare_flare_plots.coverage" NAME="solare_flare_plots Coverage Results" MODIFIED="1752869257534" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/plots" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$train__1_.coverage" NAME="train (1) Coverage Results" MODIFIED="1739208175894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$cif.coverage" NAME="cif Coverage Results" MODIFIED="1741201884675" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$feature_selection.coverage" NAME="feature_selection Coverage Results" MODIFIED="1747830066371" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$model.coverage" NAME="model Coverage Results" MODIFIED="1745923120330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$testin.coverage" NAME="testin Coverage Results" MODIFIED="1750969316930" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
