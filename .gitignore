@@ -6,6 +6,8 @@ experiments_plot5/
 logFinal/
 plots/
 model/
+experiments_plot_final/
+Data/
 *.txt
 *.out
 
