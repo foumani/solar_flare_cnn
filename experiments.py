@@ -27,6 +27,9 @@ def run_experiment(args, data, reporter, method):
     poster = f"_{args.poster}" if args.poster is not None else ""
     np.save(f"./{args.results_dir}/{method.__name__}_{args.binary}{poster}_cm.npy",
             np.array([run_val.cm for run_val in run_vals]))
+    tsses = [run.tss for run in run_vals]
+    avg_tss = np.average(tsses)
+    print(f"\nAverage TSS of {args.runs} runs: {avg_tss:.4f}")
 
 
 def model_experiment(args, data, n=1, save=True):
@@ -86,6 +89,7 @@ def cnn_experiments(args, data, reporter, opt_args):
     utils.reset_seeds(args)
     run_experiment(args, data, reporter, baselines.baseline_cnn)
 
+
 def macnn_experiments(args, data, reporter, opt_args):
     os.environ["CUDA_VISIBLE_DEVICES"] = "3"
     if opt_args:
@@ -103,6 +107,7 @@ def contreg_experiments(args, data, reporter, opt_args):
         args = config.no_preprocess(args)
     utils.reset_seeds(args)
     run_experiment(args, data, reporter, baselines.baseline_contreg)
+
 
 def no_preprocessing_experiments(args, data, baseline_reporter, opt_args=True):
     utils.reset_seeds(args)
@@ -129,6 +134,7 @@ def no_preprocessing_experiments(args, data, baseline_reporter, opt_args=True):
     # macnn
     args.runs = 10
     macnn_experiments(args, data, baseline_reporter, opt_args=False)
+
 
 def model_experiments(args, data):
     args = config.optimal_model(args, binary=True)
@@ -272,12 +278,10 @@ def feature_selection(args, data, reporter):
     ordering = sorted(range(len(saliency_sum)), key=lambda i: saliency_sum[i],
                       reverse=True)
     args.ordering = ordering
-    for i in range(1, 24+1):
+    for i in range(1, 24 + 1):
         config.optimal_model(args, binary=True)
         args.n_features = i
         train.config_run(args, data, reporter)
-
-
 
 
 def main():
@@ -300,46 +304,47 @@ def main():
     # draw_embeddings_tsne(model_args, data)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    if args.experiment == "cmod":
+        args = config.optimal_model(args, True)
+        train.config_run(args, data, reporter)
     if args.experiment == "model":
         train.config_run(args, data, reporter)
-    if args.experiment == "search":
+    if args.experiment == "search":  # TODO: fix
         train.search(args, data, reporter)
-    if args.experiment == "orion_search":
+    if args.experiment == "orion_search":  # TODO: fix
         train.bohb_search(args, data, reporter)
-    if args.experiment == "saliency":
+    if args.experiment == "saliency":  # TODO: fix
         train.saliency_map(args, data, reporter)
-    if args.experiment == "feature_selection":
+    if args.experiment == "feature_selection":  # TODO: fix
         feature_selection(args, data, reporter)
-    if args.experiment == "local":
-        train.local_search(args, data, reporter)
-    if args.experiment == "ablation":
+    if args.experiment == "ablation":  # TODO: fix
         train.ablation(args, data, reporter)
-    if args.experiment == "model_experiments":
+    if args.experiment == "model_experiments":  # TODO: fix
         model_experiments(args, data)
     if args.experiment == "svm":
         args.method_name = baselines.baseline_svm
         svm_experiments(args, data, baseline_reporter, opt_args=True)
-    if args.experiment == "lstm":
+    if args.experiment == "lstm":  # TODO: fix
         args.method_name = baselines.baseline_lstmfcn
         lstm_experiments(args, data, baseline_reporter, opt_args=True)
-    if args.experiment == "minirocket":
+    if args.experiment == "minirocket":  # TODO: fix
         args.method_name = baselines.baseline_minirocket
         minirocket_experiments(args, data, baseline_reporter, opt_args=True)
-    if args.experiment == "cnn":
+    if args.experiment == "cnn":  # TODO: fix
         args.method_name = baselines.baseline_cnn
         cnn_experiments(args, data, baseline_reporter, opt_args=True)
-    if args.experiment == "cif":
+    if args.experiment == "cif":  # TODO: fix
         args.method_name = baselines.baseline_cif
         cif_experiments(args, data, baseline_reporter, opt_args=True)
-    if args.experiment == "contreg":
+    if args.experiment == "contreg":  # TODO: fix
         args.method_name = baselines.baseline_contreg
         contreg_experiments(args, data, baseline_reporter, opt_args=True)
-    if args.experiment == "macnn":
+    if args.experiment == "macnn":  # TODO: fix
         args.method_name = baselines.baseline_macnn
         macnn_experiments(args, data, baseline_reporter, opt_args=True)
-    if args.experiment == "no_preprocessing":
+    if args.experiment == "no_preprocessing":  # TODO: fix
         no_preprocessing_experiments(args, data, baseline_reporter)
-    if args.experiment == "plot":
+    if args.experiment == "plot":  # TODO: fix
         data.plot_ar_hist(args)
         # data.plot_instance_removal(args)
 

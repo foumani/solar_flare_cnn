@@ -28,48 +28,29 @@ Extract the partitions and structure data in the following format:
 
 ## Replicating the Paper's Results
 
-To replicate the paper's results run the following command (Replace `<data_dir>`
-with the directory path where you extracted the data).
+To reproduce the results presented in the paper, run the following command (replace <data_dir> with the path to the directory where the dataset partitions were extracted):
 
 ```bash
-python experiments.py --datadir <data_dir> --logdir log
+python experiments.py --datadir <data_dir> --experiment cmod --splitreport split.csv --modelreport model.csv --configreport config.csv
 ```
+This command runs the main experiment using the CMOD model.
 
-The resulting plots are saved in the `plots/` folder.
 
-## Running the Code
-
-To find the best combination of hyper-parameters for the model run the following
-commands.
-
-* For binary-class classification:
+## Running Baseline Models
+To run experiments for baseline models, use the following command:
 
 ```bash
-python train.py --datadir <data_dir> --logdir log --nsearch 500
+python experiments.py --datadir <data_dir> --experiment <model_name>
 ```
 
-* For multi-class classification:
+Replace <model_name> with one of the following options:
 
-```bash
-python train.py --datadir <data_dir> --logdir log --nsearch 500 --multi
-```
+* svm
+* cif
+* contreg
+* cnn (refers to the CNN model implemented in the sktime library)
+* lstm
+* minirocket
+* macnn
 
-The resutls (comparison between different hyper-parameters) are saved
-in `plot/model_report-[binary or multi].csv`
-
-To find the best combination of hyper-parameters for the baselines for binary
-classification run the following command (Replace <method_name> with svm,
-minirocket, lstm, cif, cnn according to which baseline you want to run)
-
-```bash
-python baselines.py --method <method_name> --datadir <datadir> --logdir log --paramsearch 200
-```
-
-And for multi-class classification run
-
-```bash
-python baselines.py --method <method_name> --datadir <datadir> --logdir log --paramsearch 300 --multi
-```
-
-The results (cpmparison between different hyper-parameters) are saved
-in `plot/baseline-[method_name]-model-[binary or multi].csv` 
+Each option runs the corresponding baseline model using the same dataset.

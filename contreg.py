@@ -230,7 +230,7 @@ def contrastive_regression(X_train, y_train, y_type_train, X_test, y_test, y_typ
 
                 # Compute regression loss
                 regression_output = regression_model(x_batch, training=True)
-                loss_regression = tf.keras.losses.MeanSquaredError()(y_type_batch,
+                loss_regression = tf.keras.losses.MeanSquaredError()(tf.convert_to_tensor(regression_output, dtype=tf.float32),
                                                                      regression_output)
                 loss_regression = tf.reduce_mean(loss_regression) * 0.00000001
 

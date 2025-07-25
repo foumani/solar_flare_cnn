@@ -8,8 +8,13 @@ plots/
 model/
 experiments_plot_final/
 Data/
-*.txt
 *.out
+
+# Ignore all .txt files
+*.txt
+
+# Except requirements.txt
+!requirements.txt
 
 
 # Byte-compiled / optimized / DLL files

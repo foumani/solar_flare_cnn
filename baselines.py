@@ -18,7 +18,6 @@ from sktime.transformations.panel.rocket import MiniRocketMultivariate
 import config
 import utils
 from data import Data
-from preprocess import Normalizer
 from reporter import BaselineReporter
 from utils import Metric
 import contreg
@@ -34,12 +33,12 @@ def baseline_svm(binary, X_train, y_train, X_test, y_test, train_df):
         features[:, :, 4] = deepcopy(data[:, :, -1])
         features = features.reshape((len(data), 24 * features.shape[2]))
         return features
-    
+
     def preprocess(X, y):
         X = extract_features(X)
         indices = ~np.isnan(X).any(axis=1)
         return X[indices], y[indices]
-    
+
     X_train, y_train = preprocess(X_train, y_train)
     X_test, y_test = preprocess(X_test, y_test)
     svc = SVC(max_iter=2500)
@@ -103,7 +102,7 @@ def baseline_macnn(binary, X_train, y_train, X_test, y_test, train_df):
     try:
         # Attempt the prediction
         y_test_prediction = clf.predict(X_test)
-        print("Prediction successful for this configuration.") # Indicate success
+        print("Prediction successful for this configuration.")  # Indicate success
 
     except Exception as e:
         # Handle any error that occurs during the predict call
@@ -112,7 +111,8 @@ def baseline_macnn(binary, X_train, y_train, X_test, y_test, train_df):
         # Create a default prediction array of zeros
         # This creates an array of zeros with the same shape and data type as y_test
         y_test_prediction = np.zeros_like(y_test)
-        print(f"Generated default prediction array of shape {y_test_prediction.shape} with all zeros.")
+        print(
+            f"Generated default prediction array of shape {y_test_prediction.shape} with all zeros.")
         print("Returning default prediction metric.")
 
     # Return the Metric object using whatever y_test_prediction ended up being
@@ -120,15 +120,13 @@ def baseline_macnn(binary, X_train, y_train, X_test, y_test, train_df):
     return Metric(y_true=y_test, y_pred=y_test_prediction, binary=binary)
 
 
-
 def baseline_contreg(binary, X_train, y_train, X_test, y_test, train_df):
     y_type_train = train_df["flare_type_num"].to_numpy()
     X_train = X_train.transpose([0, 2, 1])
     X_test = X_test.transpose([0, 2, 1])
-    y_test_prediction = contreg.contrastive_regression(X_train, y_train, y_type_train, X_test, y_test, None)
+    y_test_prediction = contreg.contrastive_regression(X_train, y_train, y_type_train,
+                                                       X_test, y_test, None)
     return Metric(y_true=y_test, y_pred=y_test_prediction, binary=binary)
-
-
 
 
 def cross_val(args, data, reporter, method):
@@ -136,7 +134,8 @@ def cross_val(args, data, reporter, method):
 
     start_time = time.time()
     args.test_part = 5
-    X_train, y_train, _, _, X_test, y_test, train_df, _, _ = data.numpy_datasets(args, args.run_no)
+    X_train, y_train, _, _, X_test, y_test, train_df, _, _ = data.numpy_datasets(args,
+                                                                                 args.run_no)
     test_metric = method(args.binary, X_train, y_train, X_test, y_test, train_df)
     run_time = time.time() - start_time
     print(f"test part {5}: {test_metric}, "
@@ -166,7 +165,6 @@ def randomized_search(args, data, method):
     rng = random.Random(args.seed)
     for _ in range(args.n_search):
         args.train_n = rng.choice(config.split_sizes)
-        args.train_k = None
         args.nan_mode = rng.choice(config.nan_modes)
         args.normalization_mode = rng.choice(config.normalizations)
         print()

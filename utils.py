@@ -23,47 +23,44 @@ def arg_parse(manual=None):
     parser = common_arg_parse(manual)
     parser.add_argument("--learning_rate", dest="lr", default=0.01, type=float,
                         help="Learning rate for the Adam optimizer.")
-    parser.add_argument("--earlystop", dest="early_stop", default=100, type=int)
-    parser.add_argument("--stop", dest="stop", default=1000, type=int,
+    parser.add_argument("--earlystop", dest="early_stop", default=40, type=int)
+    parser.add_argument("--stop", dest="stop", default=200, type=int,
                         help="Maximum number of training iterations.")
-    parser.add_argument("--search", dest="n_search", type=int, default=100,
+    parser.add_argument("--search", dest="n_search", type=int, default=1,
                         help="Number of search iterations for hyperparameter tuning")
-    parser.add_argument("--batch", dest="batch_size", default=256, type=int,
+    parser.add_argument("--batch", dest="batch_size", default=64, type=int,
                         help="Batch size for training.")
     parser.add_argument("--draw", dest="draw", action="store_true",
                         help="Draw a t-SNE visualization of the model's last layer.")
     parser.add_argument("--smote", dest="smote", action="store_true", default=False)
-    parser.add_argument("--valp", dest="val_p", default=0.4, required=False,
+    parser.add_argument("--valp", dest="val_p", default=0.5, required=False,
                         type=float,
                         help="Fraction of data to dedicate to validation.")
     parser.add_argument("--importance", dest="class_importance", default=None,
                         required=False,
                         help="Comma-seperated list specifying the importance of each class. (e.g., 0.4,0.6)")
     parser.add_argument("--plots", dest="plots", default="plots")
-    parser.add_argument("--results", dest="results", default="log/results")
     parser.add_argument("--gpu", nargs="?", const=0, type=int,
                         help="Run on GPU. Optionally specify GPU ID (default: 0 if the flag is provided without a value).")
     parser.add_argument('--multi', dest='binary', action="store_false",
                         help="Disable binary classification to run multi-class classification (currently not supported).")
-    parser.add_argument("--ndbsr", dest="ndbsr", action="store_true",
+    parser.add_argument("--ndbsr", dest="ndbsr", action="store_true", default=False,
                         help="Enable Near Decision Boundary Sample Removal.")
-    parser.add_argument("--aug", dest="aug", action="store_true",
+    parser.add_argument("--aug", dest="aug", action="store_true", default=False,
                         help="Enable augmentation for the data.")
-    parser.add_argument('--runs', dest='runs', default=1, type=int,
-                        help='Number of times to run the model (default: 1).')
+    parser.add_argument('--runs', dest='runs', default=5, type=int,
+                        help='Number of times to run the model (default: 5).')
     parser.add_argument("--datadir", dest="data_dir", required=True,
                         help="Path to the data directory.")
-    parser.add_argument("--logdir", dest="log_dir", required=True,
+    parser.add_argument("--logdir", dest="log_dir", default="log",
                         help="Path to the log directory.")
     parser.add_argument("--files_csv", dest="files_df_filename", default="all_files.csv",
                         help="Filename for the CSV file containing instance metadata (default: 'all_files.csv').")
     parser.add_argument("--files_mem", dest="files_np_filename",
                         default="full_data_X_1_25.npy",
                         help="Filename for the NumPy file with all instance data (default: 'full_data_X_1_25.npy').")
-    parser.add_argument("--n", dest="train_n", default=None,
-                        help="Comma-separated list specifying the distribution of training samples per class (e.g., 400,300,200,100). Mutually exclusive with '--k'.")
-    parser.add_argument("--k", dest="train_k", default=None,
-                        help="Comma-separated list specifying the distribution of training samples per class (e.g., 400,300,200,100). Mutually exclusive with '--n'.")
+    parser.add_argument("--n", dest="train_n", default="6500,1000",
+                        help="Comma-separated list specifying the distribution of training samples per class (e.g., 400,300,200,100). ")
     parser.add_argument("--valpart", dest="val_part", default=None, type=int,
                         help="Partition index of the SWAN-SF dataset to use for validation."
                              " Mutually exclusive with '--valp'.")
@@ -96,7 +93,7 @@ def arg_parse(manual=None):
     parser.add_argument("--features", dest="n_features", default=24, required=False,
                         type=int)
     parser.add_argument("--nan", dest="nan_mode", default=None, required=False,
-                        help="How to handle NAN numbers in data, if not given does nothing. options: 0, avg")
+                        help="How to handle NAN numbers in data, if not given does nothing. options: none, 0, local_avg, avg")
     parser.add_argument("--norm", dest="normalization_mode", default=None, required=False,
                         help="How to normalize the data. options: scale, zscore")
     parser.add_argument("--seed", dest="seed", default=42, required=False, type=int,
@@ -114,9 +111,9 @@ def arg_parse(manual=None):
                         required=False)
     parser.add_argument("--configreport", dest="config_report_filename",
                         default="configs.csv", required=False)
-    parser.add_argument("--resultfilename", dest="results_filename", required=True,
+    parser.add_argument("--resultfilename", dest="results_filename", default="result", required=False,
                         help="Filename to save the results in.")
-    parser.add_argument("--resultdir", dest="results_dir", default="experiments_plot",
+    parser.add_argument("--resultdir", dest="results_dir", default="log/results",
                         help="Directory to save the results in.")
     args = parser.parse_args()
 
@@ -140,19 +137,13 @@ def initialize(args):
 
     if not os.path.exists(args.log_dir):
         os.makedirs(args.log_dir)
-    if not os.path.exists("./experiments_plot"):
-        os.makedirs("./experiments_plot")
-    if not os.path.exists("./plots"):
-        os.makedirs("./plots")
+    if not os.path.exists(args.results_dir):
+        os.makedirs(args.results_dir)
     if not os.path.exists(args.plots):
         os.makedirs(args.plots)
-    if not os.path.exists(args.results):
-        os.makedirs(args.results)
 
     if args.train_n is not None:
         args.train_n = [int(a) for a in args.train_n.split(",")]
-    if args.train_k is not None:
-        args.train_k = [int(a) for a in args.train_k.split(",")]
     if args.depth is not None:
         args.depth = [int(a) for a in args.depth.split(",")]
         if len(args.depth) != 3:
@@ -187,12 +178,15 @@ def initialize(args):
     if args.model_report_filename is None:
         args.model_report_filename = f"seeded_best_model_report_{'binary' if args.binary else 'multi'}.csv"
     args.poster = None
+    args.ordering = None
 
 
 def print_config(args):
     print(f"cpu count: {os.cpu_count()}")
     print(f"device: {args.device}")
     print(f"data dir: {args.data_dir}")
+    print(f"results dir: {args.results_dir}")
+    print(f"results file: {args.results_filename}")
     print(f"csv database: {args.files_df_filename}")
     print(f"mem instances: {args.files_np_filename}")
     print(f"val p: {args.val_p}")
@@ -200,11 +194,9 @@ def print_config(args):
     print(f"caching: {args.cache}")
 
 
-def hash_dataset(partitions, k, n, nan_mode, binary):
+def hash_dataset(partitions, n, nan_mode, binary):
     if n is not None:
         hash_str = f"parts{partitions}_n_{n}"
-    elif k is not None:
-        hash_str = f"parts{partitions}_k_{k}"
     else:
         hash_str = f"parts{partitions}_full"
 
@@ -217,10 +209,8 @@ def hash_name(args):
     hash_str = ""
     if args.train_n is not None:
         hash_str += f"train(n){args.train_n}_"
-    elif args.train_k is None:
-        hash_str += f"train(full)_"
     else:
-        hash_str += f"train(k){args.train_k}_"
+        hash_str += f"train(full)_"
 
     hash_str += f"val[{args.val_part if args.val_part is not None else args.val_p}]_"
     hash_str += f"test[{args.test_part}]"
@@ -242,10 +232,8 @@ def hash_model(args):
     hash_str = ""
     if args.train_n is not None:
         hash_str += f"train(n){args.train_n}_"
-    elif args.train_k is None:
-        hash_str += f"train(full)_"
     else:
-        hash_str += f"train(k){args.train_k}_"
+        hash_str += f"train(full)_"
 
     hash_str += f"_batch{args.batch_size}"
 
@@ -269,8 +257,6 @@ def add_results(args, metrics):
     NUM_RUNS_PER_EXPERIMENT = args.runs
     new_results = np.empty((0, NUM_CLASSES, NUM_CLASSES))
     for metric in metrics:
-        print(metric.cm)
-        print(metric.cm.shape)
         new_results = np.append(new_results, np.array([metric.cm]), axis=0)
     print(new_results.shape)
     print(new_results)

@@ -263,45 +263,10 @@ class Data:
 
         if args.aug:
             augmenter = (AddNoise(scale=(0.01, 0.05), seed=args.seed)
-                         # + Dropout(p=args.data_dropout, fill=0.0, size=[1], seed=args.seed)
-                         # + Dropout(p=args.data_dropout, fill=0.0, size=[1, 2, 3, 4, 5], seed=args.seed)
                          + Quantize(n_levels=256))
             # %%
             X_train_aug = augmenter.augment(np.transpose(X_train_np, (0, 2, 1)))
             X_train_np = np.transpose(X_train_aug, (0, 2, 1))
-        # X_train_np, y_train_np = self.numpy_dataset(train_parts,
-        #                                             args.normalization_mode,
-        #                                             args,
-        #                                             args.train_k,
-        #                                             args.train_n,
-        #                                             train=True,
-        #                                             nan_mode=args.nan_mode,
-        #                                             binary=args.binary)
-        # if self.verbose:
-        #     self.print_stats("train", y_train_np, args.binary)
-        #
-        # if args.val_p is not None:
-        #     val_idx = self.np_rng.choice(int(len(X_train_np)),
-        #                                  int(len(X_train_np) * args.val_p),
-        #                                  replace=False)
-        #     val_mask = np.zeros(len(X_train_np), dtype=bool)
-        #     val_mask[val_idx] = True
-        #     X_val_np = deepcopy(X_train_np[val_mask])
-        #     y_val_np = deepcopy(y_train_np[val_mask])
-        #     X_train_np = X_train_np[~val_mask]
-        #     y_train_np = y_train_np[~val_mask]
-        # else:
-        #     X_val_np, y_val_np = None, None
-        #
-        # X_test_np, y_test_np = self.numpy_dataset([args.test_part],
-        #                                           args.normalization_mode,
-        #                                           args,
-        #                                           nan_mode=args.nan_mode,
-        #                                           binary=args.binary,
-        #                                           cache=args.cache)
-        # if self.verbose:
-        #     self.print_stats("test ", y_test_np, args.binary)
-
         return X_train_np, y_train_np, X_val_np, y_val_np, X_test_np, y_test_np, files_df_train, files_df_val, None
 
     def numpy_dataset(self, parts, normalization_mode, args, k=None, n=None,
@@ -335,13 +300,12 @@ class Data:
         return X, y
 
     def load(self, args, parts, full=False):
-        hash_dataset = f"{utils.hash_dataset(parts, args.train_k, args.train_n, args.nan_mode, args.binary)}"
+        hash_dataset = f"{utils.hash_dataset(parts, args.train_n, args.nan_mode, args.binary)}"
         if args.cache and hash_dataset in self.saved_datasets:
             (X, y, files_df) = self.saved_datasets[hash_dataset]
         else:
             files_df = split(self.all_files_df, partitions=parts, args=args,
                              rng_state=self.pd_rng_state,
-                             k=args.train_k if not full else None,
                              n=args.train_n if not full else None,
                              binary=args.binary)
             X, y = read_instances(files_df, self.all_files_np, args.binary)

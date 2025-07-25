@@ -72,17 +72,16 @@ class BaselineReporter:
     def __init__(self):
         self.metric = None
         self.split_report_df = pd.DataFrame(
-            columns=["run no.", "test_part", "train_k", "train_n", "nan_mode",
+            columns=["run no.", "test_part", "train_n", "nan_mode",
                      "normalization", "ndbsr", "smote", "augmentation", "test_run"])
         self.model_report_df = pd.DataFrame(
-            columns=["run no.", "train_k", "train_n", "nan_mode",
+            columns=["run no.", "train_n", "nan_mode",
                      "normalization", "ndbsr", "smote", "augmentation", "all_test_runs"])
 
     def model_row(self, args, metric):
         if args.verbose < 0: return
         self.model_report_df.loc[len(self.model_report_df.index)] = [
             args.run_no,
-            args.train_k,
             args.train_n,
             args.nan_mode,
             args.normalization_mode,
@@ -96,7 +95,6 @@ class BaselineReporter:
         self.split_report_df.loc[len(self.split_report_df.index)] = [
             args.run_no,
             args.test_part,
-            args.train_k,
             args.train_n,
             args.nan_mode,
             args.normalization_mode,
@@ -125,12 +123,12 @@ class Reporter:
         self.split_report_df = pd.DataFrame(
             columns=["id", "model id", "run no.", "val_part", "test_part",
                      "batch_size", "ndbsr", "smote", "augmentation",
-                     "train_k", "train_n", "ch_conv", "l_hidden", "dropout",
+                     "train_n", "ch_conv", "l_hidden", "dropout",
                      "nan_mode", "class_importance", "lr", "best_val_run",
                      "test_run", "n_features"])
         self.model_report_df = pd.DataFrame(
             columns=["id", "run no.", "batch_size", "ndbsr", "smote", "augmentation",
-                     "train_k", "train_n",
+                     "train_n",
                      "ch_conv", "l_hidden", "dropout", "nan_mode",
                      "class_importance", "lr", "rand_seed", "np_seed", "torch_seed",
                      "all_best_val_runs",
@@ -154,7 +152,6 @@ class Reporter:
             args.ndbsr,
             args.smote,
             args.aug,
-            args.train_k,
             args.train_n,
             [args.depth[0], args.depth[1], args.depth[2]],
             [args.hidden[0], args.hidden[1]],
@@ -180,7 +177,6 @@ class Reporter:
             args.ndbsr,
             args.smote,
             args.aug,
-            args.train_k,
             args.train_n,
             [args.depth[0], args.depth[1], args.depth[2]],
             [args.hidden[0], args.hidden[1]],
