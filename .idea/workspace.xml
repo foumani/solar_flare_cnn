@@ -5,26 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6c5bcd17-3344-4f10-b472-d717b3ba9557" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/baseline_plotting.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/baseline_plotting.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/baselines.py" beforeDir="false" afterPath="$PROJECT_DIR$/baselines.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contreg.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contreg.py" beforeDir="false" afterPath="$PROJECT_DIR$/contreg.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contrex_module.ipynb" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/details.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiments.py" beforeDir="false" afterPath="$PROJECT_DIR$/experiments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature_selection.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/feature_selection.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plot_feature_selection.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/plot_feature_selection.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reporter.py" beforeDir="false" afterPath="$PROJECT_DIR$/reporter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tuning_plotting.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/tuning_plotting.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,8 +16,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Jupyter Notebook" />
         <option value="Python Script" />
+        <option value="Jupyter Notebook" />
       </list>
     </option>
   </component>
@@ -129,7 +111,7 @@
       <recent name="D:\workspace\solar_flare_prediction\solar_flare_cnn" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.contreg">
+  <component name="RunManager" selected="Python.cmod">
     <configuration name="MACNN search &lt;old&gt;" type="PythonConfigurationType" factoryName="Python">
       <module name="solar_flare_cnn" />
       <option name="ENV_FILES" value="" />
@@ -216,7 +198,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/experiments.py" />
-      <option name="PARAMETERS" value="--datadir /media/EXTHDD/arash/data/solar_flare --experiment cmod --gpu 2 --splitreport split.csv --modelreport model.csv --configreport config.csv" />
+      <option name="PARAMETERS" value="--datadir /media/EXTHDD/arash/data/new --experiment cmod --gpu 2 --splitreport split.csv --modelreport model.csv --configreport config.csv" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -778,7 +760,7 @@
       <workItem from="1753140853250" duration="594000" />
       <workItem from="1753204537268" duration="3000" />
       <workItem from="1753204554614" duration="681000" />
-      <workItem from="1753454728527" duration="16740000" />
+      <workItem from="1753454728527" duration="20362000" />
     </task>
     <servers />
   </component>
@@ -797,12 +779,15 @@
     </option>
   </component>
   <component name="XDebuggerManager">
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="y_type_batch" language="Python" />
-        <watch expression="regression_output" language="Python" />
-      </configuration>
-    </watches-manager>
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/data.py</url>
+          <line>377</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/solar_flare_cnn$MACNN_search.coverage" NAME="MACNN search Coverage Results" MODIFIED="1748455477170" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
@@ -818,7 +803,7 @@
     <SUITE FILE_PATH="coverage/solar_flare_cnn$largest_config.coverage" NAME="largest config Coverage Results" MODIFIED="1744153011309" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$cnn.coverage" NAME="cnn Coverage Results" MODIFIED="1745929754037" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$search.coverage" NAME="search Coverage Results" MODIFIED="1745916366074" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/solar_flare_cnn$cmod.coverage" NAME="cmod Coverage Results" MODIFIED="1753469888098" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/solar_flare_cnn$cmod.coverage" NAME="cmod Coverage Results" MODIFIED="1753478738283" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$local.coverage" NAME="local Coverage Results" MODIFIED="1745922279032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$minirocket__old_.coverage" NAME="minirocket &lt;old&gt; Coverage Results" MODIFIED="1753472067697" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/solar_flare_cnn$experiments.coverage" NAME="experiments Coverage Results" MODIFIED="1738892548024" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />

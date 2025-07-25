@@ -379,7 +379,7 @@ def create_partition_files_df(partition_dir, files_df_path=None):
         flare_path = os.path.join(partition_dir, flare)
         for file_name in os.listdir(flare_path):
             path = os.path.join(
-                os.path.join(*(flare_path.split(os.path.sep)[1:])), file_name)
+                os.path.join(*(flare_path.split(os.path.sep)[-2:])), file_name)
             label = file_name[0] if file_name[0] != "F" else "Q"
             partition = re.search(r'partition\d+', partition_dir).group()
             active_region = re.search(r"ar\d+", file_name).group()
@@ -407,8 +407,7 @@ def create_files_numpy(data_dir, file_path, files_df):
     pbar = tqdm(total=n, unit="files", smoothing=0.01)
     X = np.empty((n, 24, 60))
     for index, row in files_df.iterrows():
-        file_path = row["path"]
-        df = pandas.read_csv(os.path.join(data_dir, file_path), delimiter="\t")
+        df = pandas.read_csv(os.path.join(data_dir, row["path"]), delimiter="\t")
         df = df[df.columns[1:25]]
         X[index] = df.to_numpy().T
         pbar.update(1)
